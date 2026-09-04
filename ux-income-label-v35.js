@@ -26,8 +26,10 @@
     const el=document.getElementById('dRemain');
     if(!el)return;
     el.classList.remove('red');
+    el.style.color='';
     if(remain<0){
       el.classList.add('red');
+      el.style.color='var(--r)';
       el.textContent='⚠ ใช้เกินแผน '+fm(Math.abs(remain));
     }else{
       el.textContent=fm(remain);
