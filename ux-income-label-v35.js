@@ -36,11 +36,19 @@
     }
   }
 
+  function renderRecentWithDelete(){
+    const box=document.getElementById('recent');
+    if(!box||typeof S==='undefined'||!Array.isArray(S.tx)||typeof thDate!=='function'||typeof fm!=='function')return;
+    const l=[...S.tx].sort((a,b)=>(b.date+b.id).localeCompare(a.date+a.id)).slice(0,8);
+    box.innerHTML=l.length?l.map(x=>`<div class="item"><div class="itemtop"><span><b>${x.note||x.cat}</b><div class="sub">${x.cat} • ${thDate(x.date)}</div></span><span style="text-align:right"><b class="${x.type==='expense'?'red':'green'}">${x.type==='expense'?'-':'+'}${fm(x.amount)}</b><br><button class="btn danger" style="margin-top:6px" onclick="delTx('${x.id}')">ลบ</button></span></div></div>`).join(''):'<div class="sub">ยังไม่มีรายการ</div>';
+  }
+
   function apply(){
     renameInputLabel('sIncome');
     renameInputLabel('oIncome');
     renameNetWorth();
     applyActualToRemain();
+    renderRecentWithDelete();
   }
 
   if(typeof render==='function'){
