@@ -25,15 +25,18 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> filePathCallback;
 
     private static final String[] ENHANCEMENT_SCRIPTS = new String[]{
-            "ux-income-label-v35.js?v=61",
-            "financial-health-v1.js?v=61",
-            "future-whatif-v1.js?v=61",
-            "history-insights-v1.js?v=61",
-            "quick-guide-fold-v1.js?v=61",
-            "health-simple-v1.js?v=61",
-            "position-easy-v1.js?v=61",
-            "settings-fold-v1.js?v=61",
-            "quick-guide-copy-v1.js?v=61"
+            "ux-income-label-v35.js?v=66",
+            "financial-health-v1.js?v=66",
+            "future-whatif-v1.js?v=66",
+            "history-insights-v1.js?v=66",
+            "quick-guide-fold-v1.js?v=66",
+            "health-simple-v1.js?v=66",
+            "position-easy-v1.js?v=66",
+            "settings-fold-v1.js?v=66",
+            "quick-guide-copy-v1.js?v=66",
+            "moji-elegant-ui-v1.js?v=66",
+            "moji-theme-fix-v2.js?v=66",
+            "moji-ui-skin-v2.js?v=66"
     };
 
     @Override
@@ -116,7 +119,7 @@ public class MainActivity extends Activity {
             }
         });
 
-        if (savedInstanceState == null) webView.loadUrl(APP_URL);
+        if (savedInstanceState == null) webView.loadUrl(APP_URL + "?android=v66");
         else webView.restoreState(savedInstanceState);
     }
 
@@ -130,8 +133,8 @@ public class MainActivity extends Activity {
             js.append("'").append(ENHANCEMENT_SCRIPTS[i]).append("'");
         }
         js.append("];let p=Promise.resolve();files.forEach(function(f){p=p.then(function(){return new Promise(function(resolve){");
-        js.append("const base=f.split('?')[0];const found=[].slice.call(document.scripts).some(function(s){return (s.src||'').indexOf(base)>=0;});");
-        js.append("if(found){resolve();return;}const s=document.createElement('script');s.src='./'+f;s.onload=resolve;s.onerror=resolve;document.body.appendChild(s);});});});");
+        js.append("const base=f.split('?')[0];document.querySelectorAll('script[data-moji-android]').forEach(function(s){if((s.src||'').indexOf(base)>=0)s.remove();});");
+        js.append("const s=document.createElement('script');s.dataset.mojiAndroid='1';s.src='./'+f+'&android='+(Date.now());s.onload=resolve;s.onerror=resolve;document.body.appendChild(s);});});});");
         js.append("})();");
         view.evaluateJavascript(js.toString(), null);
     }
