@@ -1,0 +1,10 @@
+{
+  "name": "Smart Personal Finance Manager",
+  "short_name": "My Finance",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f6f9",
+  "theme_color": "#0b1f33",
+  "description": "Personal finance manager. Financial data stays on the user's device."
+}
