@@ -22,12 +22,12 @@
       .hist-donut:after{content:'';position:absolute;inset:31px;background:#fff;border-radius:50%}
       .legend-row{display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed #e5e7eb}
       .legend-dot{width:11px;height:11px;border-radius:50%;background:var(--n);opacity:.85}
-      .trend-month{padding:9px 0;border-bottom:1px dashed #e5e7eb}.trend-month:last-child{border-bottom:0}
-      .trend-line{display:grid;grid-template-columns:42px 1fr 86px;gap:8px;align-items:center;margin-top:5px}
-      .trend-bar{height:10px;background:#eef3f7;border-radius:999px;overflow:hidden}
-      .trend-fill.in{height:100%;background:#15803d;border-radius:999px}.trend-fill.out{height:100%;background:#b91c1c;border-radius:999px}
+      .expense-month{display:grid;grid-template-columns:64px 1fr 86px;gap:8px;align-items:center;padding:8px 0;border-bottom:1px dashed #e5e7eb}
+      .expense-month:last-child{border-bottom:0}
+      .expense-bar{height:14px;background:#eef3f7;border-radius:999px;overflow:hidden}
+      .expense-fill{height:100%;background:#b91c1c;border-radius:999px}
       .hist-summary-only{margin-top:8px;padding:9px 10px;background:#f8fafc;border-radius:10px;color:#64748b;font-size:12px}
-      @media(max-width:420px){.trend-line{grid-template-columns:38px 1fr 78px;font-size:12px}}
+      @media(max-width:420px){.expense-month{grid-template-columns:58px 1fr 78px;font-size:12px}}
     `;document.head.appendChild(s);
   }
   function foldHtml(id,title,open){return `<div class="fold-head" onclick="histToggle('${id}')"><h2 style="margin:0">${title}</h2><button type="button" class="fold-btn" id="${id}Btn">${open?'▲ ย่อ':'▼ เปิด'}</button></div>`}
@@ -70,9 +70,13 @@
     let pos=0;return 'conic-gradient('+rows.map((r,i)=>{const start=pos;pos+=r[1]/total*100;const hue=(i*67+205)%360;return `hsl(${hue} 48% 54%) ${start.toFixed(2)}% ${pos.toFixed(2)}%`}).join(',')+')';
   }
   function monthLabel(ym){const [y,m]=ym.split('-').map(Number);return new Intl.DateTimeFormat('th-TH',{month:'short',year:'2-digit'}).format(new Date(y,m-1,1))}
-  function trendData(){
+  function expenseTrendData(){
     const now=new Date(),arr=[];
-    for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1),ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');let inc=0,exp=0;(S.tx||[]).filter(x=>txYm(x)===ym).forEach(x=>{if(x.type==='income')inc+=Number(x.amount||0);else if(x.type==='expense')exp+=Number(x.amount||0)});arr.push({ym,inc,exp})}
+    for(let i=11;i>=0;i--){
+      const d=new Date(now.getFullYear(),now.getMonth()-i,1),ym=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      let exp=0;(S.tx||[]).filter(x=>txYm(x)===ym&&x.type==='expense').forEach(x=>exp+=Number(x.amount||0));
+      arr.push({ym,exp});
+    }
     return arr;
   }
   function ensureInsights(monthTx){
@@ -82,9 +86,9 @@
     const state=ui(),compOpen=state.histComp!==false,trendOpen=state.histTrend===true;
     const comp=expenseComposition(monthTx),total=comp.reduce((s,r)=>s+r[1],0),top=comp.slice(0,3);
     const compBody=total?`<div class="hist-donut" style="background:${donutGradient(comp,total)}"></div>${comp.map((r,i)=>`<div class="legend-row"><span class="legend-dot" style="filter:hue-rotate(${i*67}deg)"></span><span>${esc(r[0])}<div class="sub">${(r[1]/total*100).toFixed(1)}%</div></span><b>${money(r[1])}</b></div>`).join('')}<h3 style="margin-top:12px">Top 3 ค่าใช้จ่าย</h3>${top.map((r,i)=>`<div class="row"><span>${i+1}. ${esc(r[0])}</span><b>${money(r[1])}</b></div>`).join('')}`:'<div class="sub" style="padding:12px 0">ยังไม่มีค่าใช้จ่ายในเดือนที่เลือก</div>';
-    const tr=trendData(),mx=Math.max(1,...tr.map(x=>Math.max(x.inc,x.exp)));
-    const trendBody='<div class="sub" style="margin:8px 0 4px"><b class="green">รับ</b> = รายรับจริง &nbsp; • &nbsp; <b class="red">จ่าย</b> = ค่าใช้จ่ายจริง</div>'+tr.map(x=>`<div class="trend-month"><b>${monthLabel(x.ym)}</b><div class="trend-line"><span class="green">รับ</span><div class="trend-bar"><div class="trend-fill in" style="width:${(x.inc/mx*100).toFixed(1)}%"></div></div><b class="green" style="text-align:right">${money(x.inc)}</b></div><div class="trend-line"><span class="red">จ่าย</span><div class="trend-bar"><div class="trend-fill out" style="width:${(x.exp/mx*100).toFixed(1)}%"></div></div><b class="red" style="text-align:right">${money(x.exp)}</b></div></div>`).join('');
-    wrap.innerHTML=`<div class="card" style="margin-top:11px">${foldHtml('histComp','สัดส่วนค่าใช้จ่ายเดือนนี้',compOpen)}<div id="histComp" style="display:${compOpen?'block':'none'}">${compBody}</div></div><div class="card">${foldHtml('histTrend','แนวโน้มรายรับ–รายจ่าย 12 เดือน',trendOpen)}<div id="histTrend" style="display:${trendOpen?'block':'none'}">${trendBody}</div></div>`;
+    const tr=expenseTrendData(),mx=Math.max(1,...tr.map(x=>x.exp));
+    const trendBody='<div class="sub" style="margin:8px 0 4px">เปรียบเทียบ <b>ค่าใช้จ่ายจริง</b> ของแต่ละเดือนย้อนหลัง 12 เดือน • แถบยาวกว่า = ใช้จ่ายมากกว่า</div>'+tr.map(x=>`<div class="expense-month"><b>${monthLabel(x.ym)}</b><div class="expense-bar"><div class="expense-fill" style="width:${(x.exp/mx*100).toFixed(1)}%"></div></div><b class="red" style="text-align:right">${money(x.exp)}</b></div>`).join('');
+    wrap.innerHTML=`<div class="card" style="margin-top:11px">${foldHtml('histComp','สัดส่วนค่าใช้จ่ายเดือนนี้',compOpen)}<div id="histComp" style="display:${compOpen?'block':'none'}">${compBody}</div></div><div class="card">${foldHtml('histTrend','เปรียบเทียบค่าใช้จ่าย 12 เดือน',trendOpen)}<div id="histTrend" style="display:${trendOpen?'block':'none'}">${trendBody}</div></div>`;
   }
   function renderHist(){
     if(typeof S==='undefined'||!Array.isArray(S.tx))return;
