@@ -22,9 +22,12 @@
       .hist-donut:after{content:'';position:absolute;inset:31px;background:#fff;border-radius:50%}
       .legend-row{display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed #e5e7eb}
       .legend-dot{width:11px;height:11px;border-radius:50%;background:var(--n);opacity:.85}
-      .trend-row{display:grid;grid-template-columns:72px 1fr 84px;gap:8px;align-items:center;padding:5px 0}
-      .trend-bar{height:10px;background:#eef3f7;border-radius:999px;overflow:hidden}.trend-fill{height:100%;background:var(--g);border-radius:999px}
-      @media(max-width:420px){.trend-row{grid-template-columns:62px 1fr 76px;font-size:12px}}
+      .trend-month{padding:9px 0;border-bottom:1px dashed #e5e7eb}.trend-month:last-child{border-bottom:0}
+      .trend-line{display:grid;grid-template-columns:42px 1fr 86px;gap:8px;align-items:center;margin-top:5px}
+      .trend-bar{height:10px;background:#eef3f7;border-radius:999px;overflow:hidden}
+      .trend-fill.in{height:100%;background:#15803d;border-radius:999px}.trend-fill.out{height:100%;background:#b91c1c;border-radius:999px}
+      .hist-summary-only{margin-top:8px;padding:9px 10px;background:#f8fafc;border-radius:10px;color:#64748b;font-size:12px}
+      @media(max-width:420px){.trend-line{grid-template-columns:38px 1fr 78px;font-size:12px}}
     `;document.head.appendChild(s);
   }
   function foldHtml(id,title,open){return `<div class="fold-head" onclick="histToggle('${id}')"><h2 style="margin:0">${title}</h2><button type="button" class="fold-btn" id="${id}Btn">${open?'▲ ย่อ':'▼ เปิด'}</button></div>`}
@@ -48,11 +51,11 @@
     box.innerHTML=l.length?l.map(x=>`<div class="item"><div class="itemtop"><span><b>${esc(x.note||x.cat)}</b><div class="sub">${esc(x.cat)} • ${typeof thDate==='function'?thDate(x.date):esc(x.date)}</div></span><span style="text-align:right"><b class="${x.type==='expense'?'red':'green'}">${x.type==='expense'?'-':'+'}${money(x.amount)}</b><br><button class="btn danger" style="margin-top:6px" onclick="delTx('${esc(x.id)}')">ลบ</button></span></div></div>`).join(''):'<div class="sub" style="padding:9px 0">ยังไม่มีรายการในเดือนนี้</div>';
   }
   function ensureHistoryControls(){
-    const search=document.getElementById('hSearch');if(!search)return;
-    const label=search.closest('label');if(label){const t=[...label.childNodes].find(n=>n.nodeType===3&&n.nodeValue.trim());if(t)t.nodeValue='ค้นหาหมายเหตุ';search.placeholder='เช่น กาแฟ / เติมน้ำมัน';}
+    const search=document.getElementById('hSearch');if(search){const label=search.closest('label');if(label)label.style.display='none'}
+    const anchor=document.getElementById('hType')?.closest('label');if(!anchor)return;
     if(!document.getElementById('hCat')){
       const catLabel=document.createElement('label');catLabel.innerHTML='หมวด<select id="hCat" onchange="renderHistory()"></select>';
-      label.parentNode.insertBefore(catLabel,label);
+      anchor.parentNode.appendChild(catLabel);
     }
     const sel=document.getElementById('hCat'),keep=sel.value||'all';
     sel.innerHTML='<option value="all">ทุกหมวด</option>'+allCats().map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
@@ -80,27 +83,25 @@
     const comp=expenseComposition(monthTx),total=comp.reduce((s,r)=>s+r[1],0),top=comp.slice(0,3);
     const compBody=total?`<div class="hist-donut" style="background:${donutGradient(comp,total)}"></div>${comp.map((r,i)=>`<div class="legend-row"><span class="legend-dot" style="filter:hue-rotate(${i*67}deg)"></span><span>${esc(r[0])}<div class="sub">${(r[1]/total*100).toFixed(1)}%</div></span><b>${money(r[1])}</b></div>`).join('')}<h3 style="margin-top:12px">Top 3 ค่าใช้จ่าย</h3>${top.map((r,i)=>`<div class="row"><span>${i+1}. ${esc(r[0])}</span><b>${money(r[1])}</b></div>`).join('')}`:'<div class="sub" style="padding:12px 0">ยังไม่มีค่าใช้จ่ายในเดือนที่เลือก</div>';
     const tr=trendData(),mx=Math.max(1,...tr.map(x=>Math.max(x.inc,x.exp)));
-    const trendBody=tr.map(x=>`<div class="trend-row"><span>${monthLabel(x.ym)}</span><div><div class="trend-bar" title="ค่าใช้จ่าย"><div class="trend-fill" style="width:${(x.exp/mx*100).toFixed(1)}%"></div></div><div class="sub" style="margin-top:2px">รับ ${money(x.inc)}</div></div><b style="text-align:right">${money(x.exp)}</b></div>`).join('')+'<div class="sub" style="margin-top:7px">แถบ = ค่าใช้จ่ายจริง • ตัวเลข “รับ” = รายรับจริงย้อนหลัง 12 เดือน</div>';
-    wrap.innerHTML=`<div class="card" style="margin-top:11px">${foldHtml('histComp','สัดส่วนค่าใช้จ่ายเดือนนี้',compOpen)}<div id="histComp" style="display:${compOpen?'block':'none'}">${compBody}</div></div><div class="card">${foldHtml('histTrend','แนวโน้มรายเดือน',trendOpen)}<div id="histTrend" style="display:${trendOpen?'block':'none'}">${trendBody}</div></div>`;
+    const trendBody='<div class="sub" style="margin:8px 0 4px"><b class="green">รับ</b> = รายรับจริง &nbsp; • &nbsp; <b class="red">จ่าย</b> = ค่าใช้จ่ายจริง</div>'+tr.map(x=>`<div class="trend-month"><b>${monthLabel(x.ym)}</b><div class="trend-line"><span class="green">รับ</span><div class="trend-bar"><div class="trend-fill in" style="width:${(x.inc/mx*100).toFixed(1)}%"></div></div><b class="green" style="text-align:right">${money(x.inc)}</b></div><div class="trend-line"><span class="red">จ่าย</span><div class="trend-bar"><div class="trend-fill out" style="width:${(x.exp/mx*100).toFixed(1)}%"></div></div><b class="red" style="text-align:right">${money(x.exp)}</b></div></div>`).join('');
+    wrap.innerHTML=`<div class="card" style="margin-top:11px">${foldHtml('histComp','สัดส่วนค่าใช้จ่ายเดือนนี้',compOpen)}<div id="histComp" style="display:${compOpen?'block':'none'}">${compBody}</div></div><div class="card">${foldHtml('histTrend','แนวโน้มรายรับ–รายจ่าย 12 เดือน',trendOpen)}<div id="histTrend" style="display:${trendOpen?'block':'none'}">${trendBody}</div></div>`;
   }
   function renderHist(){
     if(typeof S==='undefined'||!Array.isArray(S.tx))return;
     ensureHistoryControls();
-    const month=document.getElementById('hMonth')?.value||ymNow(),type=document.getElementById('hType')?.value||'all',cat=document.getElementById('hCat')?.value||'all',q=(document.getElementById('hSearch')?.value||'').trim().toLowerCase();
+    const month=document.getElementById('hMonth')?.value||ymNow(),type=document.getElementById('hType')?.value||'all',cat=document.getElementById('hCat')?.value||'all';
     const monthTx=S.tx.filter(x=>txYm(x)===month);
-    let l=monthTx.filter(x=>(type==='all'||x.type===type)&&(cat==='all'||x.cat===cat)&&(!q||String(x.note||'').toLowerCase().includes(q)));
-    l=[...l].sort((a,b)=>(String(b.date)+String(b.id)).localeCompare(String(a.date)+String(a.id)));
+    const l=monthTx.filter(x=>(type==='all'||x.type===type)&&(cat==='all'||x.cat===cat));
     const inc=l.filter(x=>x.type==='income').reduce((s,x)=>s+Number(x.amount||0),0),exp=l.filter(x=>x.type==='expense').reduce((s,x)=>s+Number(x.amount||0),0);
     const hi=document.getElementById('hInc'),he=document.getElementById('hExp');if(hi)hi.textContent=money(inc);if(he)he.textContent=money(exp);
-    const box=document.getElementById('history');if(box)box.innerHTML=l.length?l.map(x=>`<div class="item"><div class="itemtop"><span><b>${esc(x.note||x.cat)}</b><div class="sub">${esc(x.cat)} • ${typeof thDate==='function'?thDate(x.date):esc(x.date)}</div></span><span style="text-align:right"><b class="${x.type==='expense'?'red':'green'}">${x.type==='expense'?'-':'+'}${money(x.amount)}</b><br><button class="btn danger" style="margin-top:6px" onclick="delTx('${esc(x.id)}')">ลบ</button></span></div></div>`).join(''):'<div class="sub" style="padding:12px 0">ไม่พบรายการตามตัวกรอง</div>';
-    ensureInsights(monthTx);
+    const box=document.getElementById('history');if(box)box.innerHTML='<div class="hist-summary-only">หน้านี้แสดงเฉพาะสรุปและการวิเคราะห์ รายการแต่ละรายการดูได้ที่ “บันทึก” ในรายการเดือนปัจจุบัน</div>';
+    ensureInsights(l);
   }
   function init(){
     injectCss();ensureHistoryControls();
     const hm=document.getElementById('hMonth');if(hm&&!hm.value)hm.value=ymNow();
     currentRecent();renderHist();
   }
-  // Override only the presentation functions; existing save/delete/data logic stays unchanged.
   window.renderQuick=currentRecent;
   window.renderHistory=renderHist;
   if(typeof render==='function'&&!window.__histInsightsWrapped){
