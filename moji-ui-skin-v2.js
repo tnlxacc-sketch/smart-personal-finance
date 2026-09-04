@@ -8,8 +8,6 @@
     wallet:'<path d="M4 6.5h13a3 3 0 0 1 3 3v8.5H5a2 2 0 0 1-2-2V6.5A2.5 2.5 0 0 1 5.5 4H17"/><path d="M15 11h5v4h-5a2 2 0 0 1 0-4Z"/>',
     future:'<path d="M4 19V9M10 19V5M16 19v-8M22 19V3"/><path d="M2 19h21"/>',
     pie:'<path d="M11 3a9 9 0 1 0 9 9h-9V3Z"/><path d="M14 3.5V9h5.5A7 7 0 0 0 14 3.5Z"/>',
-    target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 12 20 4M17 4h3v3"/>',
-    more:'<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
     food:'<path d="M7 3v7M4 3v4a3 3 0 0 0 6 0V3M7 10v11M17 3c-2 3-2 7 0 9v9"/>',
     coffee:'<path d="M5 8h11v5a5 5 0 0 1-5 5h-1a5 5 0 0 1-5-5V8Z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/>',
     car:'<path d="m5 16 1-5h12l1 5"/><path d="m8 11 2-4h4l2 4M4 16h16v4h-2v-2H6v2H4v-4Z"/>',
@@ -38,29 +36,20 @@
   input:focus,select:focus{outline:none!important;border-color:#b58a45!important;box-shadow:0 0 0 3px #b58a4522!important}.warn{background:#f8f0df!important;color:#755a2a!important;border:1px solid #ead8b5!important}.ok{background:#edf3ee!important;color:#496653!important}
   .tabs{background:#fcfaf6fa!important;border-top:1px solid #e5dccf!important;box-shadow:0 -7px 22px #594a3810!important}.tabs button{color:#827b73!important;border-radius:15px!important}.tabs button.on{background:#eee5d8!important;color:#342d25!important}.tabs button.on svg{color:#a97a34!important}.tabs b{display:flex!important;height:26px;align-items:center;justify-content:center}.tabs svg{width:22px;height:22px}.fab{background:#b58a45!important;color:white!important;border:4px solid #fffaf4!important;box-shadow:0 10px 24px #76551f3d!important}
   .fold-btn{background:#f1eadf!important;color:#342d25!important}.hist-summary-only{background:#f5f0e8!important;color:#766e65!important}.bar-fill{background:#b58a45!important;box-shadow:none!important}.hist-donut-hole{background:#fffdf9!important}
-  .moji-section-icon,.moji-cat-icon,.moji-quick-icon{display:inline-flex;align-items:center;justify-content:center;border-radius:14px;background:#efe7db;color:#8a672f;border:1px solid #e2d6c6}.moji-section-icon{width:36px;height:36px;margin-right:8px}.moji-section-icon svg,.moji-cat-icon svg,.moji-quick-icon svg{width:20px;height:20px}
-  .moji-quick-actions{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;padding:10px 0 2px;overflow-x:auto}.moji-quick-action{min-width:72px;border:0;background:transparent;color:#514a43;font-weight:700;font-size:11px;text-align:center;padding:4px}.moji-quick-icon{width:44px;height:44px;margin:0 auto 6px;background:#f2ebe1;color:#7d5c2b}.moji-quick-action:active .moji-quick-icon{background:#eadcc8}
+  .moji-cat-icon{display:inline-flex;align-items:center;justify-content:center;border-radius:12px;background:#efe7db;color:#8a672f;border:1px solid #e2d6c6}.moji-cat-icon svg{width:18px;height:18px}
   .moji-top3-title{display:flex;align-items:center;gap:8px}.top3 .row>span{display:flex;align-items:center;gap:9px}.moji-top3-ico{flex:0 0 auto;width:34px;height:34px;border-radius:12px;background:#efe7db;color:#7c5d2c;border:1px solid #e1d5c5;display:inline-flex;align-items:center;justify-content:center}.moji-top3-ico svg{width:18px;height:18px}
-  .moji-icon-strip{display:flex!important;gap:9px!important;overflow-x:auto!important;padding:8px 1px 12px!important}.moji-icon-chip{background:#fcfaf6!important;border-color:#e4d9cc!important;color:#5e5750!important}.moji-icon-chip .ico{background:#efe7db!important;color:#7c5d2c!important}.moji-icon-chip.on{background:#f4ead9!important;border-color:#b58a45!important;color:#342d25!important}
+  .moji-icon-strip{display:flex!important;gap:10px!important;overflow-x:auto!important;padding:8px 1px 12px!important;align-items:stretch!important}.moji-icon-chip{flex:0 0 74px!important;width:74px!important;min-width:74px!important;max-width:74px!important;min-height:92px!important;padding:9px 5px 7px!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:flex-start!important;background:#fcfaf6!important;border:1px solid #e4d9cc!important;color:#5e5750!important;border-radius:16px!important;white-space:normal!important;line-height:1.15!important}.moji-icon-chip .ico{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;border-radius:12px!important;background:#efe7db!important;color:#7c5d2c!important;display:flex!important;align-items:center!important;justify-content:center!important;margin:0 auto 6px!important}.moji-icon-chip .ico svg{width:20px!important;height:20px!important}.moji-icon-chip span:last-child{display:block!important;width:100%!important;text-align:center!important;font-size:11px!important;min-height:26px!important}.moji-icon-chip.on{background:#f4ead9!important;border-color:#b58a45!important;color:#342d25!important}
   #future .card{border-color:#dfd2c0!important}#future .card:first-child{border-top:3px solid #b58a45!important}.sheet{background:#fbf8f2!important}
-  @media(max-width:640px){main{padding:10px!important}.moji-quick-actions{grid-template-columns:repeat(7,72px)}.card{border-radius:18px!important}}
+  @media(max-width:640px){main{padding:10px!important}.card{border-radius:18px!important}}
   `; document.head.appendChild(st);
 
   const nav={dash:'home',quick:'plus',hist:'history',position:'wallet',future:'future'};
   document.querySelectorAll('.tabs button[data-p]').forEach(b=>{const x=b.querySelector('b');if(x)x.innerHTML=svg(nav[b.dataset.p])});
 
-  function quickActions(){
-    const dash=document.getElementById('dash'); if(!dash||document.getElementById('mojiQuickActions'))return;
-    const first=dash.querySelector('.card'); if(!first)return;
-    const box=document.createElement('div'); box.id='mojiQuickActions'; box.className='card';
-    const actions=[['home','ภาพรวม',()=>go('dash')],['plus','บันทึก',()=>go('quick')],['history','ประวัติ',()=>go('hist')],['wallet','เงินทั้งหมด',()=>go('position')],['pie','วิเคราะห์',()=>go('hist')],['future','อนาคต',()=>go('future')],['more','เพิ่มเติม',()=>settings(true)]];
-    box.innerHTML='<h2 style="margin-bottom:4px">เมนูการเงิน</h2><div class="moji-quick-actions">'+actions.map((a,i)=>`<button type="button" class="moji-quick-action" data-i="${i}"><span class="moji-quick-icon">${svg(a[0])}</span>${a[1]}</button>`).join('')+'</div>';
-    first.parentNode.insertBefore(box,first); box.querySelectorAll('button').forEach((b,i)=>b.onclick=actions[i][2]);
-  }
-
-  function sectionIcons(){
-    const map=[['#dash h2','home'],['#quick h2','plus'],['#hist h2','pie'],['#position h2','wallet'],['#future h2','future']];
-    map.forEach(([sel,ic])=>document.querySelectorAll(sel).forEach(h=>{if(h.dataset.mojiIcon)return;h.dataset.mojiIcon='1';const s=document.createElement('span');s.className='moji-section-icon';s.innerHTML=svg(ic);h.prepend(s)}));
+  function removeExtraIcons(){
+    document.getElementById('mojiQuickActions')?.remove();
+    document.querySelectorAll('.moji-section-icon').forEach(x=>x.remove());
+    document.querySelectorAll('[data-moji-icon]').forEach(h=>h.removeAttribute('data-moji-icon'));
   }
 
   const muted=['#c99f61','#aeb9a8','#c8b8a4','#8798ad','#d2a69d','#b8aa91','#809887','#b9a6bc','#9a8b78','#d3c5ae'];
@@ -72,11 +61,18 @@
 
   function top3Icons(){
     document.querySelectorAll('.top3').forEach(top=>{
-      const h=top.querySelector('h3'); if(h&&!h.dataset.mojiTop){h.dataset.mojiTop='1';h.classList.add('moji-top3-title');const s=document.createElement('span');s.className='moji-cat-icon';s.innerHTML=svg('pie');h.prepend(s)}
+      const h=top.querySelector('h3'); if(h&&!h.dataset.mojiTop){h.dataset.mojiTop='1';h.classList.add('moji-top3-title')}
       top.querySelectorAll('.row').forEach(r=>{const span=r.querySelector('span');if(!span||span.querySelector('.moji-top3-ico'))return;const txt=span.textContent.replace(/^\s*\d+\.\s*/,'');const i=document.createElement('span');i.className='moji-top3-ico';i.innerHTML=svg(iconFor(txt));span.prepend(i)});
     });
   }
 
-  function refresh(){quickActions();sectionIcons();top3Icons();polishCharts()}
+  function normalizeCategoryStrip(){
+    document.querySelectorAll('.moji-icon-strip .moji-icon-chip').forEach(btn=>{
+      btn.style.width='74px';btn.style.minWidth='74px';btn.style.maxWidth='74px';btn.style.minHeight='92px';
+      const ico=btn.querySelector('.ico');if(ico){ico.style.width='38px';ico.style.height='38px';ico.style.minWidth='38px';ico.style.minHeight='38px'}
+    });
+  }
+
+  function refresh(){removeExtraIcons();top3Icons();polishCharts();normalizeCategoryStrip()}
   refresh(); new MutationObserver(()=>requestAnimationFrame(refresh)).observe(document.body,{childList:true,subtree:true});
 })();
