@@ -1,108 +1,14 @@
-// Future what-if simulator. Read-only against the user's real finance data.
+// Future what-if simulator. Read-only: never changes real finance data.
 (function(){
-  function n(v){
-    const x=Number(String(v||'').replace(/,/g,''));
-    return Number.isFinite(x)?x:0;
-  }
-  function money(v){
-    return typeof fm==='function'?fm(v):new Intl.NumberFormat('th-TH',{style:'currency',currency:'THB',maximumFractionDigits:0}).format(v||0);
-  }
-  function pct(v){return (Number.isFinite(v)?v:0).toFixed(1)+'%'}
-  function payment(principal,annualRate,years){
-    principal=n(principal); annualRate=n(annualRate); years=n(years);
-    if(principal<=0||years<=0)return 0;
-    const months=Math.round(years*12), r=annualRate/100/12;
-    if(!r)return principal/months;
-    return principal*r*Math.pow(1+r,months)/(Math.pow(1+r,months)-1);
-  }
-  function current(){
-    const p=typeof plan==='function'?plan():{inc:0,ex:0,an:0,remain:0};
-    const a=typeof ac==='function'?ac():{liq:0,em:0,debt:0,total:0,net:0};
-    const debtPay=(typeof S!=='undefined'&&Array.isArray(S.debts)&&typeof sum==='function')?sum(S.debts,'payment'):0;
-    const saving=(typeof S!=='undefined'&&S.profile)?n(S.profile.saving):0;
-    const base=n(p.ex)+n(p.an);
-    return {p,a,debtPay,saving,emMonths:base?n(a.em)/base:0};
-  }
-  function field(id,label,placeholder,type){
-    if(type==='select') return `<label>${label}<select id="${id}" onchange="futureMode();futureCalc()"><option value="car">ซื้อรถ</option><option value="home">ซื้อ/ปลูกบ้าน</option><option value="prepay">โปะบ้าน/โปะหนี้</option><option value="other">ภาระใหม่อื่น ๆ</option></select></label>`;
-    return `<label>${label}<input id="${id}" class="money" inputmode="decimal" placeholder="${placeholder||'0'}" oninput="if(typeof moneyTyping==='function')moneyTyping(this);futureCalc()"></label>`;
-  }
-  function mount(){
-    const page=document.getElementById('future');
-    if(!page||document.getElementById('whatIfCard'))return;
-    const card=document.createElement('div');
-    card.className='card'; card.id='whatIfCard';
-    card.innerHTML=`
-      <h2>ลองแผนก่อนตัดสินใจ • What-if</h2>
-      <div class="sub" style="margin-bottom:9px">ใช้ข้อมูลการเงินจริงในเครื่องมาช่วยวิเคราะห์ แต่การลองแผนตรงนี้จะไม่แก้ไขยอดเงินจริงและไม่สร้างหนี้จริง</div>
-      <div class="grid g2">
-        ${field('wfType','ต้องการลองเรื่องอะไร','','select')}
-        ${field('wfPrice','ราคา/งบทั้งหมด','เช่น 1,500,000')}
-        ${field('wfCash','เงินสดที่จะจ่ายทันที','เช่น เงินดาวน์ / เงินโปะ')}
-        ${field('wfLoan','วงเงินกู้หรือหนี้ใหม่','เว้นว่างให้ระบบคำนวณจากราคา - เงินสด')}
-        ${field('wfRate','ดอกเบี้ยต่อปี (%)','เช่น 3.25')}
-        ${field('wfYears','ระยะเวลาผ่อน (ปี)','เช่น 7')}
-        ${field('wfPayment','ค่างวด/ภาระเพิ่มต่อเดือน','เว้นว่างให้ระบบคำนวณจากวงเงินกู้')}
-        ${field('wfExtra','ค่าใช้จ่ายเพิ่มต่อเดือน','เช่น ค่าน้ำมัน/ค่าส่วนกลาง')}
-      </div>
-      <div id="wfPrepayHelp" class="sub" style="display:none;margin-top:8px">กรณีโปะหนี้: ใส่ “เงินสดที่จะจ่ายทันที” เป็นยอดโปะ และใส่ “ค่างวด/ภาระเพิ่มต่อเดือน” เฉพาะกรณีค่างวดหลังโปะเปลี่ยน ระบบจะไม่เดาเงื่อนไขธนาคารให้เอง</div>
-      <div id="wfResult" style="margin-top:10px"></div>
-      <button class="btn ghost" style="width:100%;margin-top:8px" onclick="futureReset()">ล้างตัวเลขทดลอง</button>`;
-    page.appendChild(card);
-    window.futureMode();
-    window.futureCalc();
-  }
-  window.futureMode=function(){
-    const t=document.getElementById('wfType'),help=document.getElementById('wfPrepayHelp');
-    if(help)help.style.display=t&&t.value==='prepay'?'block':'none';
-  };
-  window.futureCalc=function(){
-    const box=document.getElementById('wfResult'); if(!box)return;
-    const c=current();
-    const type=document.getElementById('wfType')?.value||'car';
-    const price=n(document.getElementById('wfPrice')?.value);
-    const cash=n(document.getElementById('wfCash')?.value);
-    let loan=n(document.getElementById('wfLoan')?.value);
-    const rate=n(document.getElementById('wfRate')?.value);
-    const years=n(document.getElementById('wfYears')?.value);
-    const manualPay=n(document.getElementById('wfPayment')?.value);
-    const extra=n(document.getElementById('wfExtra')?.value);
-    if(!loan&&type!=='prepay'&&price>0)loan=Math.max(0,price-cash);
-    const calcPay=manualPay||payment(loan,rate,years);
-    const monthlyAdd=(type==='prepay'?manualPay:calcPay)+extra;
-    const remainAfter=n(c.p.remain)-monthlyAdd;
-    const debtPayAfter=c.debtPay+(type==='prepay'?0:calcPay);
-    const debtRate=c.p.inc?debtPayAfter/n(c.p.inc)*100:0;
-    const liquidAfter=Math.max(0,n(c.a.liq)-cash);
-    const base=n(c.p.ex)+n(c.p.an)+monthlyAdd;
-    const emerAfter=base?n(c.a.em)/base:0;
-    const totalInterest=(loan>0&&calcPay>0&&years>0)?Math.max(0,calcPay*Math.round(years*12)-loan):0;
-    let cls='ok',title='✅ แผนนี้ยังมีกระแสเงินสดเหลือ';
-    if(remainAfter<0){cls='warn';title='⚠ แผนนี้ทำให้เงินตามแผนติดลบ';}
-    else if(c.p.inc&&remainAfter/c.p.inc<0.05){cls='warn';title='⚠ แผนนี้เหลือเงินค่อนข้างบาง';}
-    const rows=[];
-    rows.push(`<div class="row"><span>เงินเหลือตามแผนก่อนลอง</span><b>${money(c.p.remain)}</b></div>`);
-    if(type!=='prepay'){
-      if(loan>0)rows.push(`<div class="row"><span>วงเงินกู้/หนี้ใหม่</span><b>${money(loan)}</b></div>`);
-      if(calcPay>0)rows.push(`<div class="row"><span>ค่างวดประมาณการ/เดือน</span><b>${money(calcPay)}</b></div>`);
-      if(totalInterest>0)rows.push(`<div class="row"><span>ดอกเบี้ยรวมโดยประมาณตลอดสัญญา</span><b>${money(totalInterest)}</b></div>`);
-    }
-    if(cash>0)rows.push(`<div class="row"><span>เงินพร้อมใช้หลังจ่ายเงินก้อน</span><b>${money(liquidAfter)}</b></div>`);
-    if(extra>0)rows.push(`<div class="row"><span>ค่าใช้จ่ายเพิ่ม/เดือน</span><b>${money(extra)}</b></div>`);
-    rows.push(`<div class="row"><span>เงินเหลือหลังรับภาระใหม่</span><b class="${remainAfter<0?'red':''}">${money(remainAfter)}</b></div>`);
-    rows.push(`<div class="row"><span>ภาระผ่อนต่อรายรับหลังลอง</span><b>${pct(debtRate)}</b></div>`);
-    rows.push(`<div class="row"><span>เงินฉุกเฉินรองรับหลังลอง</span><b>${emerAfter.toFixed(1)} เดือน</b></div>`);
-    box.innerHTML=`<div class="${cls}"><b>${title}</b><div class="sub" style="margin-top:5px">คำนวณจากข้อมูลปัจจุบันในแอป + ตัวเลขที่ทดลอง โดยไม่บันทึกเป็นรายการจริง</div></div><div class="card" style="margin-top:9px;margin-bottom:0">${rows.join('')}</div>`;
-  };
-  window.futureReset=function(){
-    ['wfPrice','wfCash','wfLoan','wfRate','wfYears','wfPayment','wfExtra'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-    window.futureCalc();
-  };
-  function apply(){mount(); if(document.getElementById('whatIfCard'))window.futureCalc();}
-  if(typeof render==='function'&&!window.__futureWhatIfWrapped){
-    window.__futureWhatIfWrapped=true;
-    const baseRender=render;
-    render=function(){baseRender();apply();};
-  }
-  apply();
+ const $=id=>document.getElementById(id);function n(v){const x=Number(String(v||'').replace(/,/g,''));return Number.isFinite(x)?x:0}function money(v){return typeof fm==='function'?fm(v):'฿'+Math.round(v||0).toLocaleString('th-TH')}function pct(v){return (Number.isFinite(v)?v:0).toFixed(1)+'%'}
+ function payment(p,rate,years){p=n(p);rate=n(rate);years=n(years);if(p<=0||years<=0)return 0;let m=Math.round(years*12),r=rate/100/12;if(!r)return p/m;return p*r*Math.pow(1+r,m)/(Math.pow(1+r,m)-1)}
+ function payoff(p,rate,pay){p=n(p);rate=n(rate);pay=n(pay);if(p<=0||pay<=0)return null;let r=rate/100/12;if(!r){let m=Math.ceil(p/pay);return{months:m,interest:Math.max(0,pay*(m-1)+Math.min(pay,p-pay*(m-1))-p)}}if(pay<=p*r)return null;let bal=p,int=0,m=0;while(bal>.01&&m<1200){let i=bal*r;int+=i;bal=Math.max(0,bal+i-pay);m++}return m>=1200?null:{months:m,interest:int}}
+ function duration(m){if(!m)return '-';let y=Math.floor(m/12),mo=m%12;return (y?y+' ปี ':'')+(mo?mo+' เดือน':'')||'0 เดือน'}
+ function current(){let p=typeof plan==='function'?plan():{inc:0,ex:0,an:0,remain:0},a=typeof ac==='function'?ac():{liq:0,em:0},debtPay=(typeof S!=='undefined'&&Array.isArray(S.debts)&&typeof sum==='function')?sum(S.debts,'payment'):0;return{p,a,debtPay}}
+ function field(id,label,ph){return `<label>${label}<input id="${id}" class="money" inputmode="decimal" placeholder="${ph||'0'}" oninput="if(typeof moneyTyping==='function')moneyTyping(this);futureCalc()"></label>`}
+ function mount(){let page=$('future');if(!page||$('whatIfCard'))return;let c=document.createElement('div');c.className='card';c.id='whatIfCard';c.innerHTML=`<h2>ลองแผนก่อนตัดสินใจ • What-if</h2><div class="sub" style="margin-bottom:9px">ลองตัวเลขได้โดยไม่กระทบข้อมูลจริง</div><label>ต้องการลองเรื่องอะไร<select id="wfType" onchange="futureMode();futureCalc()"><option value="car">ซื้อรถ</option><option value="home">ซื้อ/ปลูกบ้าน</option><option value="prepay">โปะหนี้บ้าน / หนี้เดิม</option><option value="other">ภาระหนี้ใหม่อื่น ๆ</option></select></label><div id="wfNew" class="grid g2" style="margin-top:9px">${field('wfPrice','ราคา/งบทั้งหมด','เช่น 1,500,000')}${field('wfCash','เงินสดที่จะจ่ายทันที','เงินดาวน์')}${field('wfLoan','วงเงินกู้/หนี้ใหม่','เว้นว่าง = ราคา - เงินสด')}${field('wfRate','ดอกเบี้ยต่อปี (%)','เช่น 3.25')}${field('wfYears','ระยะเวลาผ่อน (ปี)','เช่น 7')}${field('wfPayment','ค่างวดต่อเดือน','เว้นว่างให้ระบบคำนวณ')}${field('wfExtra','ค่าใช้จ่ายเพิ่มต่อเดือน','เช่น ค่าน้ำมัน/ค่าส่วนกลาง')}</div><div id="wfPrepay" class="grid g2" style="display:none;margin-top:9px">${field('wfDebtBalance','ยอดหนี้คงเหลือ','เช่น 1,600,000')}${field('wfDebtRate','ดอกเบี้ยปัจจุบันต่อปี (%)','เช่น 5')}${field('wfDebtPayment','ค่างวดปัจจุบัน/เดือน','เช่น 20,000')}${field('wfPrepayCash','เงินก้อนที่จะโปะ','เช่น 100,000')}</div><div id="wfResult" style="margin-top:10px"></div><button class="btn ghost" style="width:100%;margin-top:8px" onclick="futureReset()">ล้างตัวเลขทดลอง</button>`;page.appendChild(c);futureMode();futureCalc()}
+ window.futureMode=function(){let pre=$('wfType')?.value==='prepay';if($('wfNew'))$('wfNew').style.display=pre?'none':'grid';if($('wfPrepay'))$('wfPrepay').style.display=pre?'grid':'none'};
+ window.futureCalc=function(){let box=$('wfResult');if(!box)return;let c=current(),type=$('wfType')?.value||'car';if(type==='prepay'){let bal=n($('wfDebtBalance')?.value),rate=n($('wfDebtRate')?.value),pay=n($('wfDebtPayment')?.value),cash=n($('wfPrepayCash')?.value),newBal=Math.max(0,bal-cash),before=payoff(bal,rate,pay),after=payoff(newBal,rate,pay),liq=n(c.a.liq)-cash,saveInt=before&&after?Math.max(0,before.interest-after.interest):0,saveM=before&&after?Math.max(0,before.months-after.months):0;let warn=cash>n(c.a.liq)?'<div class="warn"><b>⚠ เงินก้อนที่โปะมากกว่าเงินพร้อมใช้ที่มีในแอป</b></div>':'';let calcWarn=(bal&&pay&&!before)?'<div class="warn"><b>⚠ ค่างวดต่ำเกินกว่าจะปิดหนี้ได้จากอัตราดอกเบี้ยที่กรอก</b></div>':'';box.innerHTML=`${warn}${calcWarn}<div class="card" style="margin-top:9px;margin-bottom:0"><div class="row"><span>ยอดหนี้ก่อนโปะ</span><b>${money(bal)}</b></div><div class="row"><span>โปะครั้งนี้</span><b>${money(cash)}</b></div><div class="row"><span>ยอดหนี้หลังโปะ</span><b>${money(newBal)}</b></div><div class="row"><span>เงินพร้อมใช้หลังโปะ</span><b class="${liq<0?'red':''}">${money(liq)}</b></div>${before?`<div class="row"><span>ถ้าไม่โปะ คาดว่าหมดใน</span><b>${duration(before.months)}</b></div><div class="row"><span>ดอกเบี้ยที่เหลือโดยประมาณ</span><b>${money(before.interest)}</b></div>`:''}${after?`<div class="row"><span>หลังโปะ คาดว่าหมดใน</span><b>${duration(after.months)}</b></div><div class="row"><span>ดอกเบี้ยหลังโปะโดยประมาณ</span><b>${money(after.interest)}</b></div><div class="row"><span>หมดเร็วขึ้นประมาณ</span><b>${duration(saveM)}</b></div><div class="row"><span>ประหยัดดอกเบี้ยประมาณ</span><b>${money(saveInt)}</b></div>`:''}</div><div class="sub" style="margin-top:7px">ประมาณการโดยสมมติว่าดอกเบี้ยและค่างวดคงเดิมหลังโปะ ผลจริงขึ้นกับเงื่อนไขธนาคาร</div>`;return}
+ let price=n($('wfPrice')?.value),cash=n($('wfCash')?.value),loan=n($('wfLoan')?.value),rate=n($('wfRate')?.value),years=n($('wfYears')?.value),manual=n($('wfPayment')?.value),extra=n($('wfExtra')?.value);if(!loan&&price>0)loan=Math.max(0,price-cash);let pay=manual||payment(loan,rate,years),remain=n(c.p.remain)-pay-extra,debtRate=c.p.inc?(c.debtPay+pay)/n(c.p.inc)*100:0,liq=n(c.a.liq)-cash,totalInt=loan&&pay&&years?Math.max(0,pay*Math.round(years*12)-loan):0;let title=remain<0?'⚠ เงินใช้ได้ต่อเดือนจะติดลบ':(c.p.inc&&remain/c.p.inc<.05?'⚠ เงินใช้ได้ต่อเดือนเหลือน้อย':'✅ ยังมีเงินใช้ได้หลังรับภาระใหม่');box.innerHTML=`<div class="${remain<0?'warn':'ok'}"><b>${title}</b></div><div class="card" style="margin-top:9px;margin-bottom:0"><div class="row"><span>วงเงินกู้/หนี้ใหม่</span><b>${money(loan)}</b></div><div class="row"><span>ค่างวดประมาณการ/เดือน</span><b>${money(pay)}</b></div>${totalInt?`<div class="row"><span>ดอกเบี้ยรวมโดยประมาณ</span><b>${money(totalInt)}</b></div>`:''}<div class="row"><span>เงินพร้อมใช้หลังจ่ายเงินก้อน</span><b class="${liq<0?'red':''}">${money(liq)}</b></div>${extra?`<div class="row"><span>ค่าใช้จ่ายเพิ่ม/เดือน</span><b>${money(extra)}</b></div>`:''}<div class="row"><span>เงินใช้ได้ต่อเดือนหลังรับภาระ</span><b class="${remain<0?'red':''}">${money(remain)}</b></div><div class="row"><span>ภาระผ่อนต่อรายรับหลังลอง</span><b>${pct(debtRate)}</b></div></div><div class="sub" style="margin-top:7px">ซื้อรถ ซื้อบ้าน และภาระหนี้ใหม่ ใช้หลักคำนวณเดียวกัน ต่างกันที่ราคา เงินดาวน์ ระยะผ่อน ดอกเบี้ย และค่าใช้จ่ายเพิ่มที่กรอก</div>`};
+ window.futureReset=function(){['wfPrice','wfCash','wfLoan','wfRate','wfYears','wfPayment','wfExtra','wfDebtBalance','wfDebtRate','wfDebtPayment','wfPrepayCash'].forEach(id=>{let e=$(id);if(e)e.value=''});futureCalc()};function apply(){mount();if($('whatIfCard'))futureCalc()}if(typeof render==='function'&&!window.__futureWhatIfWrapped){window.__futureWhatIfWrapped=true;let base=render;render=function(){base();apply()}}apply();
 })();
