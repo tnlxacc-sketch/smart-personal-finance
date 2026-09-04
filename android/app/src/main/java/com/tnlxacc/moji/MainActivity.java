@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.Settings;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.ValueCallback;
@@ -24,6 +23,18 @@ public class MainActivity extends Activity {
     private static final int FILE_CHOOSER_REQUEST = 1001;
     private WebView webView;
     private ValueCallback<Uri[]> filePathCallback;
+
+    private static final String[] ENHANCEMENT_SCRIPTS = new String[]{
+            "ux-income-label-v35.js?v=61",
+            "financial-health-v1.js?v=61",
+            "future-whatif-v1.js?v=61",
+            "history-insights-v1.js?v=61",
+            "quick-guide-fold-v1.js?v=61",
+            "health-simple-v1.js?v=61",
+            "position-easy-v1.js?v=61",
+            "settings-fold-v1.js?v=61",
+            "quick-guide-copy-v1.js?v=61"
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +52,7 @@ public class MainActivity extends Activity {
         settings.setLoadWithOverviewMode(false);
         settings.setUseWideViewPort(false);
         settings.setMediaPlaybackRequiresUserGesture(true);
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
 
         CookieManager.getInstance().setAcceptCookie(true);
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false);
@@ -55,6 +67,12 @@ public class MainActivity extends Activity {
                     startActivity(new Intent(Intent.ACTION_VIEW, uri));
                 } catch (ActivityNotFoundException ignored) {}
                 return true;
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                if (url != null && url.startsWith(APP_URL)) injectEnhancements(view);
             }
         });
 
@@ -100,6 +118,22 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState == null) webView.loadUrl(APP_URL);
         else webView.restoreState(savedInstanceState);
+    }
+
+    private void injectEnhancements(WebView view) {
+        StringBuilder js = new StringBuilder();
+        js.append("(function(){");
+        js.append("const files=");
+        js.append("[");
+        for (int i = 0; i < ENHANCEMENT_SCRIPTS.length; i++) {
+            if (i > 0) js.append(",");
+            js.append("'").append(ENHANCEMENT_SCRIPTS[i]).append("'");
+        }
+        js.append("];let p=Promise.resolve();files.forEach(function(f){p=p.then(function(){return new Promise(function(resolve){");
+        js.append("const base=f.split('?')[0];const found=[].slice.call(document.scripts).some(function(s){return (s.src||'').indexOf(base)>=0;});");
+        js.append("if(found){resolve();return;}const s=document.createElement('script');s.src='./'+f;s.onload=resolve;s.onerror=resolve;document.body.appendChild(s);});});});");
+        js.append("})();");
+        view.evaluateJavascript(js.toString(), null);
     }
 
     @Override
