@@ -27,6 +27,11 @@ jobs:
       - name: Install Android 16 SDK
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
 
+      - name: Prepare Moji launcher icon
+        run: |
+          mkdir -p android/app/src/main/res/drawable
+          base64 -d android/app/icon-192.jpg.b64 > android/app/src/main/res/drawable/ic_launcher.jpg
+
       - name: Set up Gradle 9.6
         uses: gradle/actions/setup-gradle@v4
         with:
