@@ -1,6 +1,6 @@
 {
-  "name": "Smart Personal Finance Manager",
-  "short_name": "My Finance",
+  "name": "M Personal Finance",
+  "short_name": "M Personal Finance",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
