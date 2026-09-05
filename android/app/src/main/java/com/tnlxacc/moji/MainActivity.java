@@ -8,6 +8,9 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintManager;
 import android.webkit.CookieManager;
 import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
@@ -28,10 +31,14 @@ public class MainActivity extends Activity {
     private static final String APP_URL="https://tnlxacc-sketch.github.io/smart-personal-finance/";
     private static final int FILE_CHOOSER_REQUEST=1001;
     private static final int BACKUP_SAVE_REQUEST=1002;
+    private static final int EXPORT_SAVE_REQUEST=1003;
     private WebView webView;
+    private WebView printWebView;
     private ValueCallback<Uri[]> filePathCallback;
     private String pendingBackupJson;
-    private static final String[] ENHANCEMENT_SCRIPTS=new String[]{"ux-income-label-v35.js?v=66","financial-health-v1.js?v=66","future-whatif-v1.js?v=66","history-insights-v1.js?v=66","quick-guide-fold-v1.js?v=66","health-simple-v1.js?v=66","position-easy-v1.js?v=66","settings-fold-v1.js?v=66","quick-guide-copy-v1.js?v=66","moji-elegant-ui-v1.js?v=66","moji-theme-fix-v2.js?v=66","moji-ui-skin-v2.js?v=66"};
+    private String pendingExportText;
+    private String pendingExportMime;
+    private static final String[] ENHANCEMENT_SCRIPTS=new String[]{"ux-income-label-v35.js?v=66","financial-health-v1.js?v=66","future-whatif-v1.js?v=66","history-insights-v1.js?v=66","quick-guide-fold-v1.js?v=66","health-simple-v1.js?v=66","position-easy-v1.js?v=66","settings-fold-v1.js?v=66","quick-guide-copy-v1.js?v=66","moji-elegant-ui-v1.js?v=66","moji-theme-fix-v2.js?v=66","moji-ui-skin-v2.js?v=66","commercial-rc1.js?v=rc1"};
 
     @Override protected void onCreate(Bundle savedInstanceState){
       super.onCreate(savedInstanceState);webView=new WebView(this);setContentView(webView);
@@ -46,6 +53,8 @@ public class MainActivity extends Activity {
 
     public class AndroidBridge{
       @JavascriptInterface public void saveBackup(String json){runOnUiThread(()->openBackupSaveDialog(json));}
+      @JavascriptInterface public void saveTextFile(String name,String mime,String text){runOnUiThread(()->openExportSaveDialog(name,mime,text));}
+      @JavascriptInterface public void printReport(String title,String html){runOnUiThread(()->printHtmlReport(title,html));}
     }
 
     private void openBackupSaveDialog(String json){
@@ -66,8 +75,34 @@ public class MainActivity extends Activity {
         if(out==null)throw new Exception("open failed");
         out.write(pendingBackupJson.getBytes(StandardCharsets.UTF_8));out.flush();
         Toast.makeText(this,"สำรองข้อมูลสำเร็จ",Toast.LENGTH_LONG).show();
+        if(webView!=null)webView.evaluateJavascript("if(window.rcBackupSuccess)window.rcBackupSuccess();",null);
       }catch(Exception e){Toast.makeText(this,"สำรองข้อมูลไม่สำเร็จ",Toast.LENGTH_LONG).show();}
       finally{pendingBackupJson=null;}
+    }
+
+    private void openExportSaveDialog(String name,String mime,String text){
+      try{
+        pendingExportText=text;pendingExportMime=(mime==null||mime.isEmpty())?"text/plain":mime;
+        Intent intent=new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);intent.setType(pendingExportMime);intent.putExtra(Intent.EXTRA_TITLE,(name==null||name.isEmpty())?"moji-export.txt":name);
+        startActivityForResult(intent,EXPORT_SAVE_REQUEST);
+      }catch(Exception e){pendingExportText=null;pendingExportMime=null;Toast.makeText(this,"เปิดหน้าบันทึกไฟล์ไม่สำเร็จ",Toast.LENGTH_LONG).show();}
+    }
+
+    private void writeExportToUri(Uri uri){
+      if(uri==null||pendingExportText==null)return;
+      try(OutputStream out=getContentResolver().openOutputStream(uri,"w")){
+        if(out==null)throw new Exception("open failed");out.write(pendingExportText.getBytes(StandardCharsets.UTF_8));out.flush();Toast.makeText(this,"ส่งออกไฟล์สำเร็จ",Toast.LENGTH_LONG).show();
+      }catch(Exception e){Toast.makeText(this,"ส่งออกไฟล์ไม่สำเร็จ",Toast.LENGTH_LONG).show();}
+      finally{pendingExportText=null;pendingExportMime=null;}
+    }
+
+    private void printHtmlReport(String title,String html){
+      try{
+        printWebView=new WebView(this);printWebView.getSettings().setJavaScriptEnabled(false);
+        printWebView.setWebViewClient(new WebViewClient(){@Override public void onPageFinished(WebView view,String url){PrintManager pm=(PrintManager)getSystemService(Context.PRINT_SERVICE);PrintDocumentAdapter adapter=view.createPrintDocumentAdapter(title==null?"Moji Report":title);pm.print(title==null?"Moji Report":title,adapter,new PrintAttributes.Builder().build());}});
+        printWebView.loadDataWithBaseURL(APP_URL,html,"text/html","UTF-8",null);
+      }catch(Exception e){Toast.makeText(this,"เปิดรายงาน PDF ไม่สำเร็จ",Toast.LENGTH_LONG).show();}
     }
 
     private void injectEnhancements(WebView view){
@@ -78,7 +113,8 @@ public class MainActivity extends Activity {
     @Override protected void onActivityResult(int requestCode,int resultCode,Intent data){
       super.onActivityResult(requestCode,resultCode,data);
       if(requestCode==FILE_CHOOSER_REQUEST&&filePathCallback!=null){Uri[] results=WebChromeClient.FileChooserParams.parseResult(resultCode,data);filePathCallback.onReceiveValue(results);filePathCallback=null;return;}
-      if(requestCode==BACKUP_SAVE_REQUEST){if(resultCode==RESULT_OK&&data!=null)writeBackupToUri(data.getData());else pendingBackupJson=null;}
+      if(requestCode==BACKUP_SAVE_REQUEST){if(resultCode==RESULT_OK&&data!=null)writeBackupToUri(data.getData());else pendingBackupJson=null;return;}
+      if(requestCode==EXPORT_SAVE_REQUEST){if(resultCode==RESULT_OK&&data!=null)writeExportToUri(data.getData());else{pendingExportText=null;pendingExportMime=null;}}
     }
     @Override public void onBackPressed(){if(webView!=null&&webView.canGoBack())webView.goBack();else super.onBackPressed();}
     @Override protected void onSaveInstanceState(Bundle outState){if(webView!=null)webView.saveState(outState);super.onSaveInstanceState(outState);}
