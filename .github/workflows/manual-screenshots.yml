@@ -1,0 +1,32 @@
+name: Capture Manual Screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'tools/capture-manual-screenshots.mjs'
+      - '.github/workflows/manual-screenshots.yml'
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Capture screenshots from live M Personal Finance
+        run: node tools/capture-manual-screenshots.mjs
+      - name: Upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: M-Personal-Finance-Manual-Screenshots
+          path: manual-screenshots/*.png
+          if-no-files-found: error
+          retention-days: 30
