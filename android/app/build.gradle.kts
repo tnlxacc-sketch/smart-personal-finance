@@ -8,8 +8,8 @@ android {
         applicationId = "com.tnlxacc.moji"
         minSdk = 26
         targetSdk = 36
-        versionCode = 4
-        versionName = "1.0.3-test-backup-gear"
+        versionCode = 5
+        versionName = "1.0.4-test-native-backup"
     }
 
     buildTypes {
