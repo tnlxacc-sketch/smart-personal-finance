@@ -10,6 +10,7 @@
     const s=document.createElement('style');
     s.id='mpf-pwa-style';
     s.textContent=`
+      #dash.dash-v2-ready>#mpfInstallCard{display:block!important}
       #mpfInstallCard{background:linear-gradient(135deg,#fffaf1,#f3eadc);border:1px solid rgba(177,132,60,.35);border-radius:18px;padding:16px;margin:0 0 12px;box-shadow:0 8px 24px rgba(74,56,38,.08)}
       #mpfInstallCard .mpf-install-title{font-weight:900;font-size:17px;color:#342d25;margin-bottom:4px}
       #mpfInstallCard .mpf-install-sub{font-size:12.5px;line-height:1.5;color:#74685b;margin-bottom:12px}
