@@ -9,7 +9,7 @@ on:
       - '*.js'
       - 'manifest.webmanifest'
       - 'service-worker.js'
-      - 'tools/qa-e2e.mjs'
+      - 'tools/qa-e2e-v6.mjs'
       - '.github/workflows/qa-e2e.yml'
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
       - name: Install Playwright
         run: |
           npm init -y
@@ -32,7 +32,7 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
           cat /tmp/spf-http.log
           exit 1
-      - name: Run complete mobile smoke QA
+      - name: Run final mobile QA v6
         env:
           QA_BASE_URL: http://127.0.0.1:4173/
-        run: node tools/qa-e2e.mjs
+        run: node tools/qa-e2e-v6.mjs
