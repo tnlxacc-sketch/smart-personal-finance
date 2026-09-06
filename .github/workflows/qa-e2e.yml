@@ -1,0 +1,38 @@
+name: QA E2E
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, clean-baseline]
+    paths:
+      - 'index.html'
+      - '*.js'
+      - 'manifest.webmanifest'
+      - 'service-worker.js'
+      - 'tools/qa-e2e.mjs'
+      - '.github/workflows/qa-e2e.yml'
+
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install playwright@1.55.0
+          npx playwright install --with-deps chromium
+      - name: Start local app
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/spf-http.log 2>&1 &
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
+          cat /tmp/spf-http.log
+          exit 1
+      - name: Run complete mobile smoke QA
+        env:
+          QA_BASE_URL: http://127.0.0.1:4173/
+        run: node tools/qa-e2e.mjs
