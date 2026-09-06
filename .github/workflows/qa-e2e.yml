@@ -1,15 +1,16 @@
-name: QA E2E
+name: Clean Baseline QA
 
 on:
   workflow_dispatch:
   push:
-    branches: [main, clean-baseline]
+    branches: [clean-baseline]
     paths:
       - 'index.html'
-      - '*.js'
+      - 'clean.css'
+      - 'clean-app.js'
       - 'manifest.webmanifest'
       - 'service-worker.js'
-      - 'tools/qa-e2e-v6.mjs'
+      - 'tools/qa-clean.mjs'
       - '.github/workflows/qa-e2e.yml'
 
 jobs:
@@ -28,11 +29,11 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Start local app
         run: |
-          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/spf-http.log 2>&1 &
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/mpf-clean-http.log 2>&1 &
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
-          cat /tmp/spf-http.log
+          cat /tmp/mpf-clean-http.log
           exit 1
-      - name: Run final mobile QA v6
+      - name: Run clean mobile QA
         env:
           QA_BASE_URL: http://127.0.0.1:4173/
-        run: node tools/qa-e2e-v6.mjs
+        run: node tools/qa-clean.mjs
