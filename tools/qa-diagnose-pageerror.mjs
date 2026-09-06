@@ -1,0 +1,9 @@
+import { chromium } from 'playwright';
+const BASE=process.env.QA_BASE_URL||'http://127.0.0.1:4173/';
+const b=await chromium.launch({headless:true});const c=await b.newContext({viewport:{width:412,height:915},isMobile:true,hasTouch:true});const p=await c.newPage();let stage='boot',errors=[];
+p.on('pageerror',e=>{errors.push(`STAGE=${stage}\n${e.stack||e.message}`)});
+await p.goto(BASE,{waitUntil:'domcontentloaded'});await p.evaluate(async()=>{if(navigator.serviceWorker)await navigator.serviceWorker.ready});stage='reload';await p.reload({waitUntil:'networkidle'});await p.waitForTimeout(1000);
+await p.evaluate(()=>{const x={profile:{name:'QA',income:46000,saving:8000,emerTarget:6,initialized:true},plans:[{id:'p1',name:'ค่าเช่า',amount:9000}],annual:[{id:'a1',name:'ประกัน',amount:12000}],assets:[{id:'as1',name:'เงินฝาก',kind:'พร้อมใช้',value:30000}],debts:[{id:'d1',name:'หนี้บ้าน',balance:400000,payment:5000,rate:4.5}],goals:[{id:'g1',name:'รถใหม่',target:900000,current:150000}],tx:[]};localStorage.setItem('spfm_public_v1',JSON.stringify(x));localStorage.setItem('mpf_first_start_notice_v1','1')});stage='data-reload';await p.reload({waitUntil:'networkidle'});await p.waitForTimeout(1000);
+for(const id of ['dash','quick','hist','position','future','dash']){stage='tab-'+id;await p.locator(`.tabs button[data-p="${id}"]`).click();await p.waitForTimeout(500)}
+stage='settings';await p.locator('header button').last().click();await p.waitForTimeout(800);stage='done';
+if(errors.length){console.error(errors.join('\n---\n'));await b.close();process.exit(1)}console.log('NO PAGEERROR');await b.close();
