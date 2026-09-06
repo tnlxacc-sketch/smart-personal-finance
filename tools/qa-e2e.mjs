@@ -16,16 +16,21 @@ async function assertCleanText(root='body'){const t=await page.locator(root).inn
 async function closeVisibleModal(root){const m=page.locator(root).last();if(!(await m.count())||!(await m.isVisible().catch(()=>false)))return;const c=m.locator('button').filter({hasText:/ปิด|ยกเลิก|Cancel/i}).first();if(await c.count())await c.click();else await page.keyboard.press('Escape');await wait(120)}
 
 await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:120000});
-// The production UI is injected by the service worker. Wait for the worker to install/activate,
-// then reload so this QA exercises the same shell that users receive from GitHub Pages/PWA.
 await page.evaluate(async()=>{if('serviceWorker' in navigator){await navigator.serviceWorker.ready}});
 await page.reload({waitUntil:'networkidle',timeout:120000});await wait(1200);
 assert(await page.locator('#mpfBootTheme').count(),'service-worker production shell did not load');
+
+// First-start popup must be usable and route to Settings, not block the app permanently.
+if(await visible('#mpfFirstStart')){
+ const goSettings=page.locator('#mpfFirstStart button').filter({hasText:/ไปที่ตั้งค่า/}).first();assert(await goSettings.count(),'first-start action missing');await goSettings.click();await wait(180);assert.equal(await visible('#settings'),true,'first-start did not open settings');await closeVisibleModal('#settings');
+}
+
 await page.evaluate(()=>{
  const demo={profile:{name:'QA',income:46000,saving:8000,emerTarget:6,initialized:true},plans:[{id:'p1',name:'ค่าเช่า',amount:9000},{id:'p2',name:'เดินทาง',amount:3000}],annual:[{id:'a1',name:'ประกัน',amount:12000}],assets:[{id:'as1',name:'เงินฝาก',kind:'พร้อมใช้',value:30000}],debts:[{id:'d1',name:'หนี้บ้าน',balance:400000,payment:5000,rate:4.5}],goals:[{id:'g1',name:'รถใหม่',target:900000,current:150000},{id:'g2',name:'บ้าน',target:5000000,current:250000}],tx:[]};
- localStorage.setItem('spfm_public_v1',JSON.stringify(demo));localStorage.removeItem('spfm_ui_settings_fold_v1');
+ localStorage.setItem('spfm_public_v1',JSON.stringify(demo));localStorage.setItem('mpf_first_start_notice_v1','1');localStorage.removeItem('spfm_ui_settings_fold_v1');
 });
 await page.reload({waitUntil:'networkidle',timeout:120000});await wait(1200);
+assert.equal(await visible('#mpfFirstStart'),false,'first-start popup returned for initialized data');
 
 assert.equal(await page.locator('.tabs button').count(),5,'expected five bottom tabs');
 for(const id of ['dash','quick','hist','position','future']){await tab(id);await assertCleanText(`#${id}`)}
@@ -73,4 +78,4 @@ if(await page.locator('#mpfInstallCard').count())await assertCleanText('#mpfInst
 const buttons=page.locator('button:visible');for(let i=0;i<await buttons.count();i++){const b=buttons.nth(i);const name=((await b.innerText().catch(()=>''))||await b.getAttribute('aria-label')||await b.getAttribute('title')||'').trim();assert(name.length>0,`visible button ${i} has no label`)}
 await assertCleanText('body');
 await browser.close();if(errors.length){console.error(errors.join('\n'));process.exit(1)}
-console.log('QA PASS: production shell, navigation, settings, entry, history, position, goals, What-if, popups, PWA assets, calculations and button labels.');
+console.log('QA PASS: first-start, production shell, navigation, settings, entry, history, position, goals, What-if, popups, PWA assets, calculations and button labels.');
