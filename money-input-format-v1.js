@@ -2,12 +2,14 @@
 (function(){
   function isMoneyInput(el){
     if(!el || el.tagName!=='INPUT') return false;
-    if(el.classList.contains('money')) return true;
     const id=String(el.id||'').toLowerCase();
     const ph=String(el.placeholder||'').toLowerCase();
     const label=String(el.closest('label')?.textContent||'');
-    if(/rate|year|month|date|search|name|note|cat|emer.?target/.test(id)) return false;
-    if(/ดอกเบี้ย|เปอร์เซ็นต์|%|ระยะเวลา|เดือน\)|วันที่|ชื่อ|หมายเหตุ|ค้นหา/.test(label)) return false;
+    // Rate/interest/period/date/text fields must never be treated as money,
+    // even if another script added the generic .money class.
+    if(/rate|interest|year|month|date|search|name|note|cat|emer.?target/.test(id)) return false;
+    if(/ดอกเบี้ย|อัตรา|เปอร์เซ็นต์|%|ระยะเวลา|เดือน\)|วันที่|ชื่อ|หมายเหตุ|ค้นหา/.test(label)) return false;
+    if(el.classList.contains('money')) return true;
     return /(amount|amt|price|cash|loan|payment|balance|value|income|saving|expense|annual|debt|prepay|extra)/.test(id) || /(บาท|เงิน|ยอด|มูลค่า|ราคา|ค่างวด|หนี้|รายรับ|รายจ่าย)/.test(label) || /1,?500,?000|100,?000|20,?000/.test(ph);
   }
   function format(el){
