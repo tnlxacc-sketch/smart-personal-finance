@@ -1,4 +1,4 @@
-// M Personal Finance — financial goals editor.
+// M Personal Finance — financial goals editor and cross-page goal sync.
 // Uses existing S.goals storage only; no schema/key/formula changes.
 (function(){
   const n=v=>{const x=Number(String(v??'').replace(/,/g,''));return Number.isFinite(x)?x:0};
@@ -10,7 +10,6 @@
   function row(g){const t=n(g.target),c=n(g.current),pc=t?Math.min(100,Math.max(0,c/t*100)):0;return `<div class="item" style="margin-top:9px"><div class="itemtop"><div><b>${esc(g.name||'เป้าหมาย')}</b><div class="sub">${money(c)} / ${money(t)} • ${Math.round(pc)}%</div></div><div><button class="btn ghost" type="button" onclick="mpfEditGoal('${esc(g.id)}')">แก้ไข</button> <button class="btn danger" type="button" onclick="mpfDeleteGoal('${esc(g.id)}')">ลบ</button></div></div><div style="height:9px;background:#ede6dc;border-radius:999px;overflow:hidden;margin-top:8px"><div style="height:100%;width:${pc}%;background:var(--g)"></div></div></div>`}
 
   function hideDuplicateFutureSummary(){
-    const page=document.getElementById('future');if(!page)return;
     const marker=document.getElementById('fSave');
     const card=marker?.closest('.card');
     if(card)card.style.display='none';
@@ -44,6 +43,26 @@
     wrap.innerHTML=`ใช้เป้าหมายจากเมนูอนาคต<select id="wfGoal" onchange="mpfUseGoal(this.value)"><option value="">— เลือกเป้าหมาย —</option>${gs.map(g=>`<option value="${esc(g.id)}"${String(g.id)===String(current)?' selected':''}>${esc(g.name||'เป้าหมาย')} • ${money(g.current)} / ${money(g.target)}</option>`).join('')}</select>`;
   }
 
+  function dashboardSection(){
+    const root=document.getElementById('dashV2');if(!root)return null;
+    return Array.from(root.querySelectorAll('.dv2-sec')).find(s=>s.querySelector('.dv2-head b')?.textContent.trim()==='เป้าหมายการเงิน')||null;
+  }
+
+  function syncDashboardGoals(){
+    const sec=dashboardSection();if(!sec)return;
+    let body=sec.querySelector('.mpf-goal-live');
+    if(!body){
+      Array.from(sec.children).forEach((el,i)=>{if(i>0)el.remove()});
+      body=document.createElement('div');body.className='mpf-goal-live';sec.appendChild(body);
+    }
+    const gs=goals().filter(g=>n(g.target)>0);
+    if(!gs.length){body.innerHTML='<div class="sub">ยังไม่มีเป้าหมายการเงิน</div>';return;}
+    body.innerHTML=gs.slice(0,3).map(g=>{
+      const pc=Math.min(100,Math.max(0,n(g.current)/n(g.target)*100));
+      return `<div style="margin-top:10px"><div class="dv2-row"><div><div class="dv2-goal-name">${esc(g.name||'เป้าหมาย')}</div><div class="dv2-goal-meta">${money(g.current)} / ${money(g.target)}</div></div><b>${Math.round(pc)}%</b></div><div class="dv2-progress"><i style="width:${pc}%"></i></div></div>`;
+    }).join('')+(gs.length>3?`<div class="sub" style="margin-top:8px">และอีก ${gs.length-3} เป้าหมาย • ดูทั้งหมดที่เมนูอนาคต</div>`:'');
+  }
+
   window.mpfUseGoal=function(id){
     ensure();if(!id)return;
     const g=S.goals.find(x=>String(x.id)===String(id));if(!g)return;
@@ -70,8 +89,11 @@
   };
   window.mpfDeleteGoal=function(id){ensure();if(!confirm('ลบเป้าหมายนี้?'))return;S.goals=S.goals.filter(x=>String(x.id)!==String(id));persist()};
 
-  function apply(){hideDuplicateFutureSummary();mount();syncWhatIfGoals()}
+  function apply(){hideDuplicateFutureSummary();mount();syncWhatIfGoals();syncDashboardGoals()}
   if(typeof render==='function'&&!window.__mpfGoalsWrapped){const base=render;window.render=function(){base();setTimeout(apply,0)};window.__mpfGoalsWrapped=true}
-  const obs=new MutationObserver(()=>{if(document.getElementById('future'))setTimeout(apply,0)});obs.observe(document.documentElement,{childList:true,subtree:true});
+  document.addEventListener('click',e=>{if(e.target.closest?.('[data-p="dash"],[data-p="future"]'))setTimeout(apply,30)},true);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(apply,0)});
+  window.addEventListener('pageshow',()=>setTimeout(apply,0));
+  const obs=new MutationObserver(()=>{if(document.getElementById('future')||document.getElementById('dashV2'))setTimeout(apply,0)});obs.observe(document.documentElement,{childList:true,subtree:true});
   apply();
 })();
