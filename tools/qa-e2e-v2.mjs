@@ -16,19 +16,16 @@ async function clean(root='body'){const t=await page.locator(root).innerText();a
 async function tab(id){const b=page.locator(`.tabs button[data-p="${id}"]`);assert.equal(await b.count(),1,`missing tab ${id}`);await b.click();await wait(180);assert.equal(await visible(`#${id}`),true,`tab ${id} did not open`)}
 async function closeModal(sel){const m=page.locator(sel).last();if(!(await m.count())||!(await m.isVisible().catch(()=>false)))return;const c=m.locator('button').filter({hasText:/ปิด|ยกเลิก|Cancel|ไว้ก่อน/i}).first();if(await c.count())await c.click();else await page.keyboard.press('Escape');await wait(120)}
 
-// Load exactly like production: install SW then reload under controller.
 await page.goto(BASE,{waitUntil:'domcontentloaded',timeout:120000});
 await page.evaluate(async()=>{if('serviceWorker' in navigator) await navigator.serviceWorker.ready});
 await page.reload({waitUntil:'networkidle',timeout:120000});await wait(900);
 assert(await count('#mpfBootTheme'),'production service-worker shell missing');
 
-// First-start popup.
 if(await visible('#mpfFirstStart')){
   const go=page.locator('#mpfFirstStart button').filter({hasText:/ไปที่ตั้งค่า/}).first();assert(await go.count(),'first-start action missing');
   await go.click();await wait(150);assert.equal(await visible('#settings'),true,'first-start -> settings failed');await closeModal('#settings');
 }
 
-// Seed isolated QA state only in this browser context.
 await page.evaluate(()=>{
   const S={profile:{name:'QA',income:46000,saving:8000,emerTarget:6,initialized:true},plans:[{id:'p1',name:'ค่าเช่า',amount:9000},{id:'p2',name:'เดินทาง',amount:3000}],annual:[{id:'a1',name:'ประกัน',amount:12000}],assets:[{id:'as1',name:'เงินฝาก',kind:'พร้อมใช้',value:30000},{id:'as2',name:'เงินฉุกเฉิน',kind:'Emergency',value:30000}],debts:[{id:'d1',name:'หนี้บ้าน',balance:400000,payment:5000,rate:4.5}],goals:[{id:'g1',name:'รถใหม่',target:900000,current:150000},{id:'g2',name:'บ้าน',target:5000000,current:250000}],tx:[{id:'t1',type:'expense',amount:1200,cat:'อาหาร',date:'2026-09-06',note:'ทดสอบ'}]};
   localStorage.setItem('spfm_public_v1',JSON.stringify(S));localStorage.setItem('mpf_first_start_notice_v1','1');localStorage.removeItem('spfm_ui_settings_fold_v1');
@@ -36,19 +33,17 @@ await page.evaluate(()=>{
 await page.reload({waitUntil:'networkidle',timeout:120000});await wait(1000);
 assert.equal(await visible('#mpfFirstStart'),false,'first-start returned after initialized state');
 
-// 1) Navigation + calculation sanity.
 assert.equal(await count('.tabs button'),5,'five bottom tabs expected');
 for(const id of ['dash','quick','hist','position','future']){await tab(id);await clean(`#${id}`)}
 
-// Dashboard live data and navigation buttons.
 await tab('dash');
-const dash=await page.locator('#dash').innerText();assert(dash.includes('46,000')||dash.includes('฿46,000'),'dashboard income/plan not rendered');
+const calc=await page.evaluate(()=>({p:plan(),a:ac(),name:S.profile.name,goals:S.goals.length}));
+assert.equal(calc.p.inc,46000,'plan income formula wrong');assert.equal(calc.p.ex,12000,'monthly expense sum wrong');assert.equal(calc.p.an,1000,'annual monthly allocation wrong');assert.equal(calc.p.remain,33000,'planned remainder wrong');assert.equal(calc.a.total,60000,'asset total wrong');assert.equal(calc.a.debt,400000,'debt total wrong');assert.equal(calc.a.net,-340000,'net worth wrong');assert.equal(calc.goals,2,'seeded goals missing');
+await clean('#dash');
 const dashLinks=page.locator('#dash button:visible');for(let i=0;i<await dashLinks.count();i++){const txt=(await dashLinks.nth(i).innerText()).trim();if(/ปฏิทิน|ดูอนาคต|ดูเงินทั้งหมด|ดูทั้งหมด/.test(txt)){await dashLinks.nth(i).click();await wait(120);break}}
 
-// 2) Guide popup.
 await page.locator('header button').filter({hasText:'วิธีใช้'}).click();await wait(120);assert.equal(await visible('#guide'),true,'guide popup failed');await closeModal('#guide');
 
-// 3) Settings: compact/sticky, inputs, folds, add rows, backup/download, restore control, save.
 await page.locator('header button').last().click();await wait(250);assert.equal(await visible('#settings'),true,'settings popup failed');
 const sheet=page.locator('#settings .sheet');assert(await sheet.count(),'settings sheet missing');assert((await sheet.evaluate(el=>el.scrollTop))<=2,'settings should open at top');
 const sticky=await page.locator('#settings .sheet>.itemtop:first-child').evaluate(el=>getComputedStyle(el).position);assert.equal(sticky,'sticky','settings title should be sticky');
@@ -61,13 +56,11 @@ const downloadPromise=page.waitForEvent('download',{timeout:5000}).catch(()=>nul
 const restore=page.locator('#settings button').filter({hasText:/นำเข้า JSON|กู้คืนข้อมูลจากไฟล์|Restore/i}).first();assert(await restore.count(),'restore control missing');
 const saveSettings=page.locator('#settings button').filter({hasText:/^\s*บันทึก(?:การตั้งค่า)?\s*$/}).first();assert(await saveSettings.count(),'settings save missing');await saveSettings.click();await wait(180);assert.equal(await visible('#settings'),false,'settings save did not close');
 
-// 4) Quick-entry actual transaction path + format/date.
 await tab('quick');const beforeTx=await page.evaluate(()=>S.tx.length);
 await page.locator('#qAmt').fill('2345');await page.locator('#qAmt').dispatchEvent('input');assert((await page.locator('#qAmt').inputValue()).includes(','),'quick amount comma failed');
 await page.locator('#qDate').fill('06/09/2026');await page.locator('#qDate').dispatchEvent('input');if(await page.locator('#qCat option').count()>1)await page.locator('#qCat').selectOption({index:1});
 const qsave=page.locator('#quick button').filter({hasText:/^\s*บันทึก\s*$/}).first();assert(await qsave.count(),'quick save missing');await qsave.click();await wait(220);const afterTx=await page.evaluate(()=>S.tx.length);assert(afterTx===beforeTx+1,'quick transaction save failed');
 
-// 5) History current UI: calendar + analysis, month navigation, visible filters only.
 await tab('hist');assert(await count('#histCalTabs'),'history view tabs missing');assert(await count('#histCalCard'),'history calendar missing');
 const calTab=page.locator('#histCalTabs button').filter({hasText:'ปฏิทิน'});await calTab.click();await wait(100);assert.equal(await visible('#histCalCard'),true,'calendar view failed');
 const monthTitleBefore=await page.locator('#histCalCard .hc-head b').innerText();await page.locator('#hcPrev').click();await wait(100);const monthTitleAfter=await page.locator('#histCalCard .hc-head b').innerText();assert.notEqual(monthTitleBefore,monthTitleAfter,'calendar previous month failed');await page.locator('#hcNext').click();
@@ -76,12 +69,10 @@ const analysisTab=page.locator('#histCalTabs button').filter({hasText:'วิเ
 if(await page.locator('#hType').isVisible().catch(()=>false)){await page.locator('#hType').selectOption('expense');await page.locator('#hType').selectOption('all')}
 await clean('#hist');
 
-// 6) Position inline add/edit/delete with synthetic data.
 await tab('position');
 const aBefore=await page.evaluate(()=>S.assets.length);const assetAdd=page.locator('#position .card').filter({hasText:'เงินและทรัพย์สิน'}).first().locator('button').filter({hasText:/เพิ่ม/}).first();assert(await assetAdd.count(),'asset add missing');await assetAdd.click();await wait(120);assert((await page.evaluate(()=>S.assets.length))===aBefore+1,'asset add failed');
 const dBefore=await page.evaluate(()=>S.debts.length);const debtAdd=page.locator('#position .card').filter({hasText:'หนี้ทั้งหมด'}).first().locator('button').filter({hasText:/เพิ่ม/}).first();assert(await debtAdd.count(),'debt add missing');await debtAdd.click();await wait(120);assert((await page.evaluate(()=>S.debts.length))===dBefore+1,'debt add failed');await clean('#position');
 
-// 7) Future/Goals/What-if sync and popup.
 await tab('future');await wait(220);assert(await count('#mpfGoalsEditor'),'goal editor missing');const goalsText=await page.locator('#mpfGoalsEditor').innerText();assert(goalsText.includes('รถใหม่')&&goalsText.includes('บ้าน'),'shared goals not shown');
 const legacy=page.locator('#fSave').locator('xpath=ancestor::*[contains(@class,"card")][1]');if(await legacy.count())assert.equal(await legacy.isVisible(),false,'duplicate Future summary still visible');
 const wfGoal=page.locator('#wfGoal');assert(await wfGoal.count(),'What-if goal selector missing');await wfGoal.selectOption('g2');await wait(120);if(await count('#wfPrice'))assert((await page.locator('#wfPrice').inputValue()).includes(','),'What-if target comma missing');
@@ -91,15 +82,13 @@ if(await count('#whatIfCard'))await clean('#whatIfCard');
 const addGoal=page.locator('#mpfGoalsEditor button').filter({hasText:/เพิ่ม/}).first();await addGoal.click();await wait(100);assert.equal(await visible('#mpfGoalModal'),true,'goal popup failed');await page.locator('#mpfGoalName').fill('เที่ยวญี่ปุ่น');await page.locator('#mpfGoalTarget').fill('120000');await page.locator('#mpfGoalTarget').dispatchEvent('input');await page.locator('#mpfGoalCurrent').fill('20000');await page.locator('#mpfGoalCurrent').dispatchEvent('input');assert((await page.locator('#mpfGoalTarget').inputValue()).includes(','),'goal popup comma failed');await page.locator('#mpfGoalModal button').filter({hasText:/บันทึก/}).click();await wait(200);
 await tab('dash');assert((await page.locator('#dash').innerText()).includes('เที่ยวญี่ปุ่น'),'new goal did not sync to dashboard');
 
-// 8) PWA/installability essentials. Native beforeinstallprompt is platform-controlled and cannot be forced here.
 const manifest=await page.request.get(new URL('manifest.webmanifest',BASE).href);assert(manifest.ok(),'manifest unavailable');const manifestJson=await manifest.json();assert(manifestJson.name||manifestJson.short_name,'manifest name missing');
 const sw=await page.request.get(new URL('service-worker.js',BASE).href);assert(sw.ok(),'service worker unavailable');const swText=await sw.text();assert(!swText.includes('dashboard-goal-sync-v1.js'),'SW references deleted dashboard script');const reg=await page.evaluate(async()=>!!(await navigator.serviceWorker.getRegistration()));assert(reg,'service worker registration missing');
 
-// 9) Visible button sanity + no runtime errors.
 for(const sel of ['header button:visible','.tabs button:visible','#dash button:visible','#quick button:visible','#hist button:visible','#position button:visible','#future button:visible']){
  const bs=page.locator(sel);for(let i=0;i<await bs.count();i++){const b=bs.nth(i);const label=((await b.innerText().catch(()=>''))||await b.getAttribute('aria-label')||await b.getAttribute('title')||'').trim();assert(label,`unlabeled visible button: ${sel} #${i}`)}
 }
 await clean('body');
 await browser.close();
 if(jsErrors.length){console.error(jsErrors.join('\n'));process.exit(1)}
-console.log('QA PASS v2: production shell, first-start, navigation, calculations, settings, backup, quick entry, history calendar/analysis, position, goals, What-if, popups and PWA essentials.');
+console.log('QA PASS v2: production shell, first-start, navigation, formulas, settings, backup, quick entry, history calendar/analysis, position, goals, What-if, popups and PWA essentials.');
