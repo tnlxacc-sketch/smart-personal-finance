@@ -9,7 +9,7 @@ on:
       - '*.js'
       - 'manifest.webmanifest'
       - 'service-worker.js'
-      - 'tools/qa-e2e-v2.mjs'
+      - 'tools/qa-e2e-v3.mjs'
       - '.github/workflows/qa-e2e.yml'
 
 jobs:
@@ -32,7 +32,7 @@ jobs:
           for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0; sleep 1; done
           cat /tmp/spf-http.log
           exit 1
-      - name: Run comprehensive mobile QA
+      - name: Run final comprehensive mobile QA
         env:
           QA_BASE_URL: http://127.0.0.1:4173/
-        run: node tools/qa-e2e-v2.mjs
+        run: node tools/qa-e2e-v3.mjs
