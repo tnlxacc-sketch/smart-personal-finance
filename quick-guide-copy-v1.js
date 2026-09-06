@@ -1,24 +1,24 @@
-// Concise purpose + clarified Quick Guide wording only. No finance logic changes.
+// Dashboard purpose card + Help wording only. No finance logic/data changes.
 (function(){
  function applyDash(){
   const dash=document.getElementById('dash'); if(!dash)return;
-  let q=null; dash.querySelectorAll(':scope > .card').forEach(c=>{const h=c.querySelector('h2');if(h&&h.textContent.includes('Quick Guide'))q=c});
+  let q=null; dash.querySelectorAll(':scope > .card').forEach(c=>{const h=c.querySelector('h2');if(h&&(h.textContent.includes('Quick Guide')||h.textContent.includes('M Personal Finance ช่วยอะไร?')))q=c});
   if(!q)return;
+  q.dataset.mpfPurpose='1';
+  const h=q.querySelector('h2');
+  h.textContent='M Personal Finance ช่วยอะไร?';
+  h.style.margin='0 0 8px';
   let purpose=q.querySelector('.qg-purpose');
-  if(!purpose){purpose=document.createElement('div');purpose.className='qg-purpose';purpose.style.cssText='margin:2px 0 10px;padding:9px 11px;border-radius:11px;background:#eef3f7;color:#0b1f33;font-size:13px;line-height:1.45;font-weight:700';q.querySelector('h2').insertAdjacentElement('afterend',purpose)}
-  purpose.textContent='รู้เงินใช้ได้จริง • เห็นทรัพย์สิน หนี้ และภาพรวมการเงินของตัวเองในที่เดียว';
-  q.querySelectorAll('.row').forEach(r=>{
-    const b=r.querySelector('b'),sub=r.querySelector('.sub'); if(!b||!sub)return;
-    if(b.textContent.includes('ตั้งค่า')) sub.textContent='กำหนดเงินใช้ต่อเดือน + ค่าใช้จ่ายประจำ + รายปี';
-    if(b.textContent.includes('ปุ่ม +')) sub.textContent='บันทึกเฉพาะรายรับ/รายจ่ายเพิ่มเติมจากรายการประจำ';
-  });
+  if(!purpose){purpose=document.createElement('div');purpose.className='qg-purpose';h.insertAdjacentElement('afterend',purpose)}
+  purpose.style.cssText='margin:0 0 9px;color:#0b1f33;font-size:14px;line-height:1.55';
+  purpose.innerHTML='<b>รู้เงินที่ควรใช้จริงในแต่ละเดือน</b><br>หลังแยกเงินออมและกันค่าใช้จ่ายจำเป็นแล้ว พร้อมเห็น <b>ทรัพย์สิน • หนี้ • มูลค่าทรัพย์สินสุทธิ</b> ในที่เดียว';
+  q.querySelectorAll('.grid,.row').forEach(el=>{if(!el.closest('.qg-purpose'))el.style.display='none'});
   const warn=q.querySelector('.warn');
-  if(warn)warn.innerHTML='<b>เงินใช้ได้</b> = เงินหลังแยกออม − ค่าใช้จ่ายประจำ − ค่าใช้จ่ายรายปีเฉลี่ย<br><span style="font-weight:400">ปุ่ม + ใช้เฉพาะเงินเข้า/ออกเพิ่มเติมจากรายการประจำ</span>';
+  if(warn){warn.style.display='block';warn.innerHTML='<b>เงินใช้ได้</b> = เงินหลังแยกออม − ค่าใช้จ่ายประจำ − ค่าใช้จ่ายรายปีเฉลี่ย<br><span style="font-weight:400"><b>ปุ่ม +</b> บันทึกเฉพาะรายรับ/รายจ่ายเพิ่มเติมจากรายการประจำ</span>'}
  }
  function applyGuide(){
   const g=document.getElementById('guide'); if(!g)return;
-  const cards=g.querySelectorAll('.card');
-  cards.forEach(c=>{
+  g.querySelectorAll('.card').forEach(c=>{
     const h=c.querySelector('h3'),sub=c.querySelector('.sub'); if(!h||!sub)return;
     if(h.textContent.includes('1. PLAN')||h.textContent.includes('1. ตั้งค่าฐานการเงิน')){h.textContent='1. ตั้งค่าฐานการเงิน';sub.textContent='ใส่เงินหลังแยกออม ค่าใช้จ่ายประจำ และรายปี เพื่อรู้ว่าเหลือเงินใช้จริงเท่าไหร่'}
     if(h.textContent.includes('2. ACTUAL')||h.textContent.includes('2. บันทึกรายการเพิ่มเติม')){h.textContent='2. บันทึกรายการเพิ่มเติม';sub.innerHTML='กด <b>+</b> เฉพาะรายการนอกเหนือจากที่ตั้งไว้ เช่น รายรับพิเศษ/ถูกหวย หรือค่าข้าว ค่าเที่ยว ของใช้ ไม่ต้องบันทึกรายการประจำซ้ำ'}
