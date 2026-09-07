@@ -1,12 +1,12 @@
 {
-  "name": "M Personal Finance",
-  "short_name": "M Finance",
+  "name": "M Personal Finance Clean",
+  "short_name": "M Finance Clean",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f7f0e6",
   "theme_color": "#3b3127",
-  "description": "Personal finance manager. Financial data stays on the user's device.",
+  "description": "Clean production candidate for M Personal Finance. Financial data stays on the user's device.",
   "icons": [
     {"src":"./icon-192.svg","sizes":"192x192","type":"image/svg+xml","purpose":"any"},
     {"src":"./icon-512.svg","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}
