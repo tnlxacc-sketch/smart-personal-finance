@@ -1,145 +1,17 @@
-<!doctype html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#342d25">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="M Personal Finance">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="clean.css?v=1">
-<title>M Personal Finance</title>
-</head>
-<body>
-<header>
-  <div class="top">
-    <div class="brand"><b>M Personal Finance</b><small>วางแผน • บันทึก • วิเคราะห์ • ข้อมูลอยู่ในเครื่อง</small></div>
-    <div class="head-actions">
-      <button class="icon-btn" id="guideBtn" type="button" aria-label="วิธีใช้">? วิธีใช้</button>
-      <button class="icon-btn" id="settingsBtn" type="button" aria-label="ตั้งค่า">⚙</button>
-    </div>
-  </div>
-</header>
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#342d25"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="M Personal Finance"><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="clean.css?v=4"><title>M Personal Finance</title></head><body>
+<header><div class="top"><div class="brand"><b>M Personal Finance</b><small>วางแผน • บันทึก • วิเคราะห์ • ข้อมูลอยู่ในเครื่อง</small></div><div class="head-actions"><button class="icon-btn" id="guideBtn">? วิธีใช้</button><button class="icon-btn" id="settingsBtn">⚙</button></div></div></header>
 <main>
-<section id="dash" class="page on">
-  <div id="mpfInstallCard" class="card install-card">
-    <div class="section-head"><div><h2>M Personal Finance บนหน้าจอมือถือ</h2><div class="sub">ติดตั้งจากเว็บนี้ได้เลย • ไม่ต้องใช้ Play Store • ข้อมูลยังอยู่ในเครื่องของคุณ</div></div></div>
-    <button id="mpfInstallBtn" class="btn dark" type="button">ติดตั้ง M Personal Finance</button>
-    <div id="mpfInstallHelp" class="install-help"></div>
-  </div>
-  <div class="card" id="dashV2">
-    <div class="section-head"><div><h2>ภาพรวมการเงิน</h2><div class="sub">สรุปจากข้อมูลที่บันทึกไว้ในเครื่องนี้</div></div></div>
-    <div class="grid g3">
-      <div class="kpi"><small>เหลือตามแผน</small><strong id="dRemain">฿0</strong></div>
-      <div class="kpi"><small>ใช้เดือนนี้</small><strong id="dMonth">฿0</strong></div>
-      <div class="kpi"><small>Net Worth</small><strong id="dNet">฿0</strong></div>
-    </div>
-  </div>
-  <div class="card">
-    <div class="section-head"><div><h2>สุขภาพการเงินของฉัน</h2><div class="sub">ตัวชี้วัดหลักเพื่อช่วยตัดสินใจ ไม่ใช่คะแนนเครดิต</div></div></div>
-    <div class="health-grid">
-      <div class="health-box"><span class="sub">เงินเหลือ</span><strong id="healthRemain">0%</strong><div id="healthRemainText" class="sub">—</div></div>
-      <div class="health-box"><span class="sub">อัตราออม</span><strong id="healthSave">0%</strong><div id="healthSaveText" class="sub">—</div></div>
-      <div class="health-box"><span class="sub">ภาระผ่อน</span><strong id="healthDebt">0%</strong><div id="healthDebtText" class="sub">—</div></div>
-    </div>
-    <div id="healthAdvice" class="notice" style="margin-top:10px"></div>
-  </div>
-  <div class="card">
-    <div class="section-head"><div><h2>เงินสำรองฉุกเฉิน</h2><div class="sub">เทียบกับค่าใช้จ่ายจำเป็นเฉลี่ยต่อเดือน</div></div><strong id="aEmer">0 เดือน</strong></div>
-    <div class="progress"><i id="emerProgress" style="width:0%"></i></div>
-    <div class="row"><span>เงินสำรองปัจจุบัน</span><b id="emerValue">฿0</b></div>
-  </div>
-  <div class="card dv2-sec" id="dashGoalsCard">
-    <div class="section-head dv2-head"><div><h2><b>เป้าหมายการเงิน</b></h2><div class="sub">แสดงเป้าหมายจากเมนูอนาคต</div></div><button class="btn soft" type="button" data-go="future">ดูทั้งหมด</button></div>
-    <div id="dashGoals"></div>
-  </div>
-</section>
-
-<section id="quick" class="page">
-  <div class="card">
-    <div class="section-head"><div><h2>บันทึกรายรับ / รายจ่ายเพิ่มเติม</h2><div class="sub">บันทึกเฉพาะรายการที่นอกเหนือจากรายการประจำ</div></div></div>
-    <div class="type-row"><button id="eBtn" class="btn danger" type="button">− ค่าใช้จ่าย</button><button id="iBtn" class="btn soft" type="button">+ รายรับ</button></div>
-    <div class="amount-line"><label for="qAmt">จำนวนเงิน (บาท)</label><button id="calcBtn" class="btn soft" type="button">▦ เครื่องคิดเลข</button></div>
-    <input id="qAmt" class="money amount-input" inputmode="decimal" placeholder="0.00">
-    <label>เลือกหมวด</label>
-    <div id="qCatStrip" class="cat-strip"></div>
-    <select id="qCat" aria-label="หมวด" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"></select>
-    <label for="qDate">วันที่ dd/mm/yyyy<input id="qDate" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy"></label>
-    <label for="qNote">หมายเหตุ<input id="qNote" placeholder="เช่น กาแฟ / เติมน้ำมัน"></label>
-    <div id="dup" class="notice" style="display:none;margin-top:8px"></div>
-    <button id="saveTxBtn" class="btn dark save-wide" type="button">บันทึก</button>
-  </div>
-  <div class="card">
-    <div class="section-head"><h2>รายการรายเดือน</h2><button id="monthFold" class="fold" type="button">▲ ย่อ</button></div>
-    <div id="monthBody" class="fold-body"><div id="recent"></div></div>
-  </div>
-</section>
-
-<section id="hist" class="page">
-  <div class="card">
-    <div id="histCalTabs" class="hist-tabs"><button type="button" data-hist="list" class="on">รายการ</button><button type="button" data-hist="calendar">ปฏิทิน</button><button type="button" data-hist="analysis">วิเคราะห์</button></div>
-    <div id="histListWrap">
-      <div class="grid g2"><label>เดือน<input id="hMonth" type="month"></label><label>ประเภท<select id="hType"><option value="all">ทั้งหมด</option><option value="expense">ค่าใช้จ่าย</option><option value="income">รายรับ</option></select></label></div>
-      <label>ค้นหา<input id="hSearch" placeholder="ค้นหาหมวด/หมายเหตุ"></label>
-      <div class="grid g2" style="margin-top:8px"><div class="row"><span>รายรับ</span><b id="hInc">฿0</b></div><div class="row"><span>ค่าใช้จ่าย</span><b id="hExp">฿0</b></div></div>
-      <div id="history"></div>
-    </div>
-    <div id="histCalCard" style="display:none">
-      <div class="section-head"><button id="hcPrev" class="btn soft" type="button">‹</button><b id="hcTitle"></b><button id="hcNext" class="btn soft" type="button">›</button></div>
-      <div id="calendarGrid" class="calendar-grid"></div>
-    </div>
-    <div id="histAnalysisWrap" style="display:none">
-      <div class="section-head"><div><h2>วิเคราะห์รายจ่าย</h2><div class="sub">สัดส่วนตามหมวดของเดือนที่เลือก</div></div></div>
-      <div class="donut-wrap"><div id="histDonut" class="donut hist-donut"></div><div id="histLegend" class="legend"></div></div>
-      <div id="histBars" class="bar-list" style="margin-top:14px"></div>
-    </div>
-  </div>
-</section>
-
-<section id="position" class="page">
-  <div class="card" id="pvCard">
-    <div class="section-head"><div><h2>ภาพรวมเงินและหนี้</h2><div class="sub">ทรัพย์สิน หนี้ และมูลค่าสุทธิ</div></div></div>
-    <div class="grid g3"><div class="kpi"><small>ทรัพย์สิน</small><strong id="pvAssetsTotal">฿0</strong></div><div class="kpi"><small>หนี้</small><strong id="pvDebtTotal">฿0</strong></div><div class="kpi"><small>Net Worth</small><strong id="pvNet">฿0</strong></div></div>
-    <div class="pv-bars"><div><div class="row"><span>เงินพร้อมใช้</span><b id="pvLiquidText">฿0</b></div><div class="pv-bar"><i id="pvLiquidBar" style="width:0%"></i></div></div><div><div class="row"><span>เงินลงทุน/ทรัพย์สินอื่น</span><b id="pvInvestText">฿0</b></div><div class="pv-bar"><i id="pvInvestBar" style="width:0%"></i></div></div><div><div class="row"><span>หนี้ทั้งหมด</span><b id="pvDebtText">฿0</b></div><div class="pv-bar"><i id="pvDebtBar" style="width:0%"></i></div></div></div>
-    <div class="pv-actions grid g2" style="margin-top:12px"><button class="btn gold" id="addAssetBtn" type="button">+ เพิ่มเงิน / ทรัพย์สิน</button><button class="btn soft" id="addDebtBtn" type="button">+ เพิ่มหนี้</button></div>
-  </div>
-  <div class="grid g2"><div class="card"><h2>เงินและทรัพย์สิน</h2><div id="assets"></div></div><div class="card"><h2>หนี้ทั้งหมด</h2><div id="debts"></div></div></div>
-</section>
-
-<section id="future" class="page">
-  <div class="card" id="mpfGoalsEditor">
-    <div class="section-head"><div><h2>เป้าหมายการเงิน</h2><div class="sub">ตั้งเป้าหมายและติดตามความคืบหน้า</div></div><button id="addGoalBtn" class="btn gold" type="button">+ เพิ่ม</button></div>
-    <div id="goalList"></div>
-  </div>
-  <div class="card" id="whatIfCard">
-    <div class="section-head"><div><h2>What-if</h2><div class="sub">ลองจำลองก่อนตัดสินใจ โดยไม่แก้ข้อมูลจริง</div></div></div>
-    <label>ใช้เป้าหมายจากเมนูอนาคต<select id="wfGoal"><option value="">— เลือกเป้าหมาย —</option></select></label>
-    <label>ประเภท<select id="wfType"><option value="other">อื่น ๆ</option><option value="car">รถ</option><option value="home">บ้าน</option></select></label>
-    <div class="grid g2"><label>ราคา / ยอดเป้าหมาย<input id="wfPrice" class="money" inputmode="decimal" placeholder="0"></label><label>เงินสด / เงินที่มีแล้ว<input id="wfCash" class="money" inputmode="decimal" placeholder="0"></label></div>
-    <div class="grid g2"><label>ยอดกู้<input id="wfLoan" class="money" inputmode="decimal" placeholder="0"></label><label>ระยะเวลา (ปี)<input id="wfYears" type="number" min="1" value="5"></label></div>
-    <label>ดอกเบี้ยต่อปี (%)<input id="wfRate" type="number" step="0.01" value="4"></label>
-    <div id="wfResult" class="notice" style="margin-top:10px"></div>
-  </div>
-</section>
+<section id="dash" class="page on"><div id="mpfInstallCard" class="install-card"><div class="mpf-install-title">M Personal Finance บนหน้าจอมือถือ</div><div class="mpf-install-sub">ติดตั้งจากเว็บนี้ได้เลย • ไม่ต้องใช้ Play Store • ข้อมูลยังอยู่ในเครื่องของคุณ</div><button id="mpfInstallBtn"><span>⇩</span> ติดตั้ง M Personal Finance</button><div id="mpfInstallHelp"></div></div><div id="dashV2"></div></section>
+<section id="quick" class="page"><div class="card qe-card"><h2>บันทึกรายรับ / รายจ่ายเพิ่มเติม</h2><div class="qe-sub">บันทึกเฉพาะรายการที่นอกเหนือจากรายการประจำ</div><div class="qe-type-row"><button id="eBtn" class="btn danger">− ค่าใช้จ่าย</button><button id="iBtn" class="btn soft">+ รายรับ</button></div><div class="qe-amount-label"><span>จำนวนเงิน (บาท)</span><button id="calcBtn" class="qe-calc-btn">▦ เครื่องคิดเลข</button></div><input id="qAmt" class="money amount-input" inputmode="decimal" placeholder="0.00"><label>เลือกหมวด</label><div id="qCatStrip" class="cat-strip"></div><select id="qCat" class="offscreen"></select><label class="qe-date-label">วันที่ <input id="qDate" inputmode="numeric" maxlength="10" placeholder="dd/mm/yyyy"></label><label class="qe-note-label">หมายเหตุ<input id="qNote" placeholder="เช่น กาแฟ / เติมน้ำมัน"></label><div id="dup" class="notice" style="display:none;margin-top:8px"></div><button id="saveTxBtn" class="btn dark qe-save">บันทึก</button></div><div class="card"><div class="qe-month-head"><h2>รายการรายเดือน</h2><button id="monthFold" class="qe-month-fold">▲ ย่อ</button></div><div class="quick-filters"><label>เดือน<input id="qListMonth" type="month"></label><label>ประเภท<select id="qListType"><option value="all">ทั้งหมด</option><option value="expense">ค่าใช้จ่าย</option><option value="income">รายรับ</option></select></label><label>หมวด<select id="qListCat"><option value="all">ทุกหมวด</option></select></label></div><div id="monthBody"><div id="recent"></div></div></div></section>
+<section id="hist" class="page"><div id="histCalTabs"><button data-hist="calendar" class="on">ปฏิทิน</button><button data-hist="analysis">วิเคราะห์</button></div><input id="hMonth" type="month" class="offscreen"><div id="histCalCard" class="card"><div class="hc-head"><button id="hcPrev">‹</button><b id="hcTitle"></b><button id="hcNext">›</button></div><div class="hc-total"><span>รายจ่ายเพิ่มเติมเดือนนี้</span><strong id="hcTotal">฿0</strong></div><div class="hc-week"><div>อา.</div><div>จ.</div><div>อ.</div><div>พ.</div><div>พฤ.</div><div>ศ.</div><div>ส.</div></div><div id="calendarGrid" class="hc-grid"></div><div id="hcDetail" class="hc-detail"></div></div><div id="histAnalysisWrap" style="display:none"><div class="card"><div class="fold-head"><h2>สัดส่วนค่าใช้จ่าย</h2></div><div class="donut-wrap"><div id="histDonut" class="hist-donut"><div class="hist-donut-hole"><div><small>เดือนนี้</small><b>Actual</b></div></div></div><div id="histLegend"></div></div><div class="top3"><h3>Top 3 ค่าใช้จ่าย</h3><div id="top3"></div></div></div><div class="card"><h2>ค่าใช้จ่ายจริงย้อนหลัง 12 เดือน</h2><div class="trend-wrap"><div id="trendBars" class="trend-bars"></div></div></div></div></section>
+<section id="position" class="page"><div id="pvCard" class="card"></div><div class="grid g2"><div class="card"><h2>เงินและทรัพย์สิน</h2><div id="assets"></div></div><div class="card"><h2>หนี้ทั้งหมด</h2><div id="debts"></div></div></div></section>
+<section id="future" class="page"><div class="card" id="mpfGoalsEditor"><div class="section-head"><div><h2>เป้าหมายการเงิน</h2><div class="sub">ตั้งเป้าหมายและติดตามความคืบหน้า</div></div><button id="addGoalBtn" class="btn gold">+ เพิ่ม</button></div><div id="goalList"></div></div><div class="card" id="whatIfCard"><h2>ลองแผนก่อนตัดสินใจ • What-if</h2><div class="sub">ลองตัวเลขได้โดยไม่กระทบข้อมูลจริง</div><label>ใช้เป้าหมายจากเมนูอนาคต<select id="wfGoal"><option value="">— เลือกเป้าหมาย —</option></select></label><label>ต้องการลองเรื่องอะไร<select id="wfType"><option value="car">ซื้อรถ</option><option value="home">ซื้อ/ปลูกบ้าน</option><option value="prepay">โปะหนี้บ้าน / หนี้เดิม</option><option value="other">ภาระหนี้ใหม่อื่น ๆ</option></select></label><div id="wfNew" class="grid g2"><label>ราคา/งบทั้งหมด<input id="wfPrice" class="money" inputmode="decimal"></label><label>เงินสดที่จะจ่ายทันที<input id="wfCash" class="money" inputmode="decimal"></label><label>วงเงินกู้/หนี้ใหม่<input id="wfLoan" class="money" inputmode="decimal"></label><label>ดอกเบี้ยต่อปี (%)<input id="wfRate" type="number" step="0.01"></label><label>ระยะเวลาผ่อน (ปี)<input id="wfYears" type="number"></label><label>ค่างวดต่อเดือน<input id="wfPayment" class="money" inputmode="decimal"></label><label>ค่าใช้จ่ายเพิ่มต่อเดือน<input id="wfExtra" class="money" inputmode="decimal"></label></div><div id="wfPrepay" class="grid g2" style="display:none"><label>ยอดหนี้คงเหลือ<input id="wfDebtBalance" class="money"></label><label>ดอกเบี้ยปัจจุบันต่อปี (%)<input id="wfDebtRate" type="number"></label><label>ค่างวดปัจจุบัน/เดือน<input id="wfDebtPayment" class="money"></label><label>เงินก้อนที่จะโปะ<input id="wfPrepayCash" class="money"></label></div><div id="wfResult"></div></div></section>
 </main>
-<button class="fab" id="fab" type="button" aria-label="บันทึกรายการ">+</button>
-<nav class="tabs">
-  <button data-p="dash" class="on"><span>⌂</span><br>ภาพรวม</button>
-  <button data-p="quick"><span>＋</span><br>บันทึก</button>
-  <button data-p="hist"><span>≡</span><br>ประวัติ</button>
-  <button data-p="position"><span>◫</span><br>เงินทั้งหมด</button>
-  <button data-p="future"><span>◎</span><br>อนาคต</button>
-</nav>
-
-<div id="guide" class="modal"><div class="sheet"><div class="modal-head"><div><h2>วิธีใช้ M Personal Finance</h2><div class="sub">เริ่มจากตั้งค่า แล้วบันทึกเฉพาะรายการจริงที่เพิ่มจากแผน</div></div><button class="btn soft" data-close="guide" type="button">ปิด</button></div><div class="settings-section"><h3>1. ตั้งค่า</h3><div class="sub">ใส่รายรับ เงินออม ค่าใช้จ่ายประจำ และค่าใช้จ่ายรายปี</div></div><div class="settings-section"><h3>2. บันทึก</h3><div class="sub">บันทึกรายรับ/รายจ่ายที่เกิดขึ้นจริงเพิ่มเติม พร้อมหมวดและวันที่</div></div><div class="settings-section"><h3>3. ประวัติ</h3><div class="sub">ดูรายการ ปฏิทิน และกราฟวิเคราะห์รายเดือน</div></div><div class="settings-section"><h3>4. เงินทั้งหมด</h3><div class="sub">เพิ่มเงินฝาก เงินลงทุน ทรัพย์สิน และหนี้ เพื่อดู Net Worth</div></div><div class="settings-section"><h3>5. อนาคต</h3><div class="sub">ตั้งเป้าหมายและลอง What-if ก่อนตัดสินใจ</div></div></div></div>
-
-<div id="settings" class="modal"><div class="sheet"><div class="modal-head"><div><h2>⚙ ตั้งค่าการเงิน</h2><div class="sub">ตั้งค่าข้อมูลพื้นฐานและแผนประจำของคุณ</div></div><button class="btn soft" data-close="settings" type="button">× ปิด</button></div><div class="settings-section"><h3>ข้อมูลพื้นฐาน</h3><div class="settings-two"><label>ชื่อแผน<input id="sName"></label><label>รายรับใช้จ่าย/เดือน<input id="sIncome" class="money" inputmode="decimal"></label><label>เงินออม/ลงทุนแยก/เดือน<input id="sSaving" class="money" inputmode="decimal"></label><label>เป้าหมายเงินฉุกเฉิน (เดือน)<input id="sEmerTarget" type="number" min="1" max="24"></label></div></div><div class="settings-section"><div class="section-head"><div><h3>ค่าใช้จ่ายประจำ / งบต่อเดือน</h3><div class="sub">ใช้คำนวณเงินเหลือตามแผน</div></div><div><button id="addPlanBtn" class="btn gold" type="button">+ เพิ่ม</button> <button class="fold sf-toggle" data-fold="planFold" type="button">▼ เปิดดู</button></div></div><div id="planFold" class="fold-body" hidden><div id="planList"></div></div></div><div class="settings-section"><div class="section-head"><div><h3>ค่าใช้จ่ายรายปี</h3><div class="sub">ระบบเฉลี่ยเป็นรายเดือนอัตโนมัติ</div></div><div><button id="addAnnualBtn" class="btn gold" type="button">+ เพิ่ม</button> <button class="fold sf-toggle" data-fold="annualFold" type="button">▼ เปิดดู</button></div></div><div id="annualFold" class="fold-body" hidden><div id="annualList"></div></div></div><div class="settings-section"><h3>สำรองและกู้คืนข้อมูล</h3><div class="sub">ควรสำรองเป็นระยะ เพราะข้อมูลอยู่ใน Browser ของเครื่องนี้</div><div class="backup-actions"><button id="backupBtn" class="btn soft" type="button">สำรองข้อมูลลงเครื่อง</button><label class="btn soft" style="text-align:center;margin:0">กู้คืนข้อมูลจากไฟล์<input id="restore" type="file" accept="application/json" style="display:none"></label></div></div><button id="saveSettingsBtn" class="btn dark save-wide" type="button">บันทึกการตั้งค่า</button></div></div>
-
-<div id="mpfFirstStart" class="modal"><div class="sheet"><div class="modal-head"><div><h2>เริ่มต้นใช้งาน M Personal Finance</h2><div class="sub">ระบบนี้เริ่มจากข้อมูลของคุณ ไม่ใช้ข้อมูลตัวอย่างเก่า</div></div></div><div class="settings-section"><h3>เริ่มต้นที่ “ตั้งค่า”</h3><div class="sub">ใส่รายรับ เงินออม ค่าใช้จ่ายประจำ และค่าใช้จ่ายรายปี จากนั้น Dashboard จะคำนวณจากข้อมูลจริงของคุณทันที</div></div><button id="firstStartSettingsBtn" class="btn dark save-wide" type="button">ไปที่ตั้งค่า</button></div></div>
-
-<div id="peModal" class="modal"><div class="sheet"><div class="modal-head"><div><h2 id="peTitle">เพิ่มรายการ</h2><div class="sub" id="peSub"></div></div><button class="btn soft" data-close="peModal" type="button">ปิด</button></div><div id="peFields"></div></div></div>
-<div id="mpfGoalModal" class="modal"><div class="sheet"><div class="modal-head"><div><h2 id="goalModalTitle">เพิ่มเป้าหมายการเงิน</h2><div class="sub">ตัวเลขจะแสดง , หลักพันอัตโนมัติ</div></div><button class="btn soft" data-close="mpfGoalModal" type="button">ปิด</button></div><label>ชื่อเป้าหมาย<input id="mpfGoalName" placeholder="เช่น รถใหม่ / บ้าน / ท่องเที่ยว"></label><label>ยอดเป้าหมาย (บาท)<input id="mpfGoalTarget" class="money" inputmode="numeric" placeholder="0"></label><label>มีเงินสำหรับเป้าหมายนี้แล้ว (บาท)<input id="mpfGoalCurrent" class="money" inputmode="numeric" placeholder="0"></label><div id="mpfGoalError" class="notice" style="display:none;margin-top:10px"></div><button id="saveGoalBtn" class="btn dark save-wide" type="button">บันทึก</button></div></div>
-<div id="calcModal" class="modal calc-modal"><div class="sheet"><div class="modal-head"><h2>เครื่องคิดเลข</h2><button class="btn soft" data-close="calcModal" type="button">ปิด</button></div><div id="calcDisplay" class="calc-display">0</div><div id="calcResult" class="calc-result"></div><div id="calcKeys" class="calc-keys"></div></div></div>
-<script src="clean-app.js?v=1" defer></script>
-</body>
-</html>
+<button class="fab" id="fab">+</button><nav class="tabs"><button data-p="dash" class="on"><span class="nav-ico"></span><span>ภาพรวม</span></button><button data-p="quick"><span class="nav-ico"></span><span>บันทึก</span></button><button data-p="hist"><span class="nav-ico"></span><span>ประวัติ</span></button><button data-p="position"><span class="nav-ico"></span><span>เงินทั้งหมด</span></button><button data-p="future"><span class="nav-ico"></span><span>อนาคต</span></button></nav>
+<div id="guide" class="modal"><div class="sheet"><div class="modal-head"><div><h2>วิธีใช้ M Personal Finance</h2><div class="sub">เริ่มจากตั้งค่า แล้วบันทึกเฉพาะรายการจริงที่เพิ่มจากแผน</div></div><button class="btn soft" data-close="guide">ปิด</button></div><div class="settings-section"><h3>1. ตั้งค่า PLAN</h3><div class="sub">ใส่รายรับ เงินออม ค่าใช้จ่ายประจำ และค่าใช้จ่ายรายปี</div></div><div class="settings-section"><h3>2. บันทึก ACTUAL</h3><div class="sub">บันทึกเฉพาะรายรับ/รายจ่ายเพิ่มเติมที่เกิดขึ้นจริง</div></div><div class="settings-section"><h3>3. ตรวจประวัติและกราฟ</h3><div class="sub">ใช้ปฏิทินและวิเคราะห์เพื่อดูพฤติกรรมรายจ่าย</div></div></div></div>
+<div id="settings" class="modal"><div class="sheet"><div class="modal-head"><div><h2>⚙ ตั้งค่าการเงิน</h2><div class="sf-title-sub">ปรับข้อมูลให้ตรงกับสถานะปัจจุบันของคุณ</div></div><button class="btn sf-close" data-close="settings">× ปิด</button></div><div class="sf-basic"><div class="sf-basic-title">ข้อมูลพื้นฐาน</div><label class="name-label">ชื่อแผน<input id="sName"></label><label>รายรับใช้จ่าย/เดือน<input id="sIncome" class="money"></label><label>เงินออม/ลงทุนแยก/เดือน<input id="sSaving" class="money"></label><label>เป้าหมายเงินฉุกเฉิน (เดือน)<input id="sEmerTarget" type="number" min="1" max="24"></label><div class="sf-info">ⓘ เป้าหมายเงินฉุกเฉินแนะนำโดยทั่วไป 3–6 เดือนของค่าใช้จ่ายจำเป็น</div></div><div class="sf-card card"><div class="sf-head"><div><h3>ค่าใช้จ่ายประจำ / งบต่อเดือน</h3><span class="sf-section-sub">เช่น ค่าบ้าน ค่าเดินทาง ค่าอาหาร ฯลฯ</span></div><button id="addPlanBtn" class="btn gold">+ เพิ่ม</button><button class="btn soft sf-toggle" data-fold="plans">▼ เปิดดู</button></div><div id="plans" hidden><div id="planList"></div></div></div><div class="sf-card card"><div class="sf-head"><div><h3>ค่าใช้จ่ายรายปี</h3><span class="sf-section-sub">เช่น ประกัน ภาษี ท่องเที่ยว ฯลฯ</span></div><button id="addAnnualBtn" class="btn gold">+ เพิ่ม</button><button class="btn soft sf-toggle" data-fold="annuals">▼ เปิดดู</button></div><div id="annuals" hidden><div id="annualList"></div></div></div><div class="sf-backup-card"><div class="sf-backup-title">สำรองและกู้คืนข้อมูล</div><div class="sf-backup-row"><button id="backupBtn" class="btn soft">⇩ สำรองข้อมูลลงเครื่อง</button><label class="restore-label btn soft">⇧ กู้คืนข้อมูลจากไฟล์<input id="restore" type="file" accept="application/json"></label></div><div class="sf-backup-note">ควรสำรองไว้เป็นระยะ โดยเฉพาะก่อนเปลี่ยนเครื่องหรือล้างข้อมูล Browser</div></div><button id="saveSettingsBtn" class="btn dark sf-save-primary">บันทึกการตั้งค่า</button></div></div>
+<div id="peModal" class="modal"><div class="sheet"><div class="modal-head"><h2 id="peTitle"></h2><button class="btn soft" data-close="peModal">ปิด</button></div><div id="peFields"></div><button id="peSave" class="btn dark save-wide">บันทึก</button></div></div>
+<div id="mpfGoalModal" class="modal"><div class="sheet"><div class="modal-head"><div><h2 id="goalModalTitle">เพิ่มเป้าหมายการเงิน</h2><div class="sub">ตัวเลขจะแสดง , หลักพันอัตโนมัติ</div></div><button class="btn soft" data-close="mpfGoalModal">ปิด</button></div><label>ชื่อเป้าหมาย<input id="mpfGoalName"></label><label>ยอดเป้าหมาย (บาท)<input id="mpfGoalTarget" class="money"></label><label>มีเงินสำหรับเป้าหมายนี้แล้ว (บาท)<input id="mpfGoalCurrent" class="money"></label><button id="saveGoalBtn" class="btn dark save-wide">บันทึก</button></div></div>
+<div id="calcModal" class="modal calc-modal"><div class="sheet"><div class="modal-head"><h2>เครื่องคิดเลข</h2><button class="btn soft" data-close="calcModal">ปิด</button></div><div id="calcDisplay" class="calc-display">0</div><div id="calcResult" class="calc-result"></div><div id="calcKeys" class="calc-keys"></div></div></div>
+<div id="mpfFirstStart" class="modal"><div class="sheet first-sheet"><div class="welcome-icon">M</div><h2>เริ่มต้นใช้งาน M Personal Finance</h2><div class="sub">ตั้งค่ารายรับ ค่าใช้จ่ายประจำ และเป้าหมายพื้นฐานก่อน ระบบจะคำนวณภาพรวมให้ทันที</div><button id="firstStartSettingsBtn" class="btn dark save-wide">เริ่มตั้งค่าการเงิน</button></div></div>
+<script>document.getElementById('calcKeys').innerHTML=['C','⌫','÷','×','7','8','9','-','4','5','6','+','1','2','3','.','0','00','(',')','='].map(k=>`<button class="calc-key ${/[÷×+\-]/.test(k)?'op':''} ${k==='='?'equal':''}" data-key="${k}">${k}</button>`).join('')+'<button class="calc-key calc-use" data-key="use">ใช้ยอดนี้</button>';</script><script src="clean-app.js?v=4"></script></body></html>
