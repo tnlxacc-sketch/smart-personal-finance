@@ -8,6 +8,8 @@ on:
       - 'index.html'
       - 'clean.css'
       - 'clean-app.js'
+      - 'clean-history.js'
+      - 'clean-parity.js'
       - 'manifest.webmanifest'
       - 'service-worker.js'
       - 'tools/qa-clean.mjs'
